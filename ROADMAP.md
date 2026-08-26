@@ -33,25 +33,27 @@ The retrieval substrate everything else stands on.
 **Skills demonstrated:** API integration, schema validation (Zod), typed RPC,
 SSR data loading, data provenance.
 
-## Phase 2 — Retrieval + RAG
+## Phase 2 — Retrieval + RAG ✅
 
-- [ ] Chunk label sections (indications, warnings, interactions, adverse
-      reactions) into a `documents` + `chunks` schema in Postgres
-- [ ] Embeddings + **pgvector** index; hybrid search (vector + full-text)
-- [ ] Answer synthesis with **mandatory inline citations** back to chunk IDs;
-      refuse to answer when retrieval confidence is low
-- [ ] Per-answer disclaimer + "show sources" expansion
+- [x] Chunk label sections into `drug_labels` + `label_chunks` in Postgres
+- [x] Embeddings + **pgvector** index; hybrid search (vector + full-text RRF)
+- [x] Answer synthesis with **mandatory citations**; refuses when the corpus
+      lacks grounded passages
+- [x] Per-answer disclaimer + source cards linking back to the label
 
 **Skills:** RAG, embeddings, pgvector, hybrid retrieval, prompt design,
 grounding/refusal behaviour.
 
-## Phase 3 — Evaluation suite (the real differentiator)
+## Phase 3 — Evaluation suite (the real differentiator) ✅ in progress
 
-- [ ] Hand-label ~100 question/answer pairs from label content (gold set)
-- [ ] Score faithfulness, answer relevance, context precision/recall
-      (Ragas-style metrics)
-- [ ] Adversarial set: questions the system *must refuse* (dosing for a
-      specific patient, diagnosis, off-label advice)
+- [x] Gold set in `src/lib/eval-set.ts` (grounded + adversarial cases)
+- [x] Ragas-style scoring: faithfulness, answer relevance, context precision,
+      refusal accuracy — LLM-as-judge in `src/lib/eval.server.ts`
+- [x] Adversarial set the system *must refuse* (patient-specific dosing,
+      diagnosis, off-label use, non-existent drug)
+- [x] `/evals` dashboard: run the suite live, per-case drill-down, skip
+      handling for drugs not yet ingested
+- [ ] Expand the gold set toward ~100 cases as the corpus grows
 - [ ] Regression run in CI on every PR; publish the score table in the README
 - [ ] Tracing/observability (LangFuse or equivalent) on every generation
 
