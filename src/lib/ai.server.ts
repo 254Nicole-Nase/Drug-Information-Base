@@ -45,10 +45,10 @@ export async function generateAnswer(
     },
     body: JSON.stringify({
       model,
-      temperature: 0.2,
       max_tokens: 900,
       messages: [{ role: "system", content: system }, ...messages],
     }),
+
   });
 
   if (!response.ok) {
