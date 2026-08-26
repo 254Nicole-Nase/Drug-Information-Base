@@ -86,31 +86,63 @@ function DrugDetail() {
 
       <Disclaimer className="mt-6" />
 
-      <div className="mt-8 space-y-6">
-        {sections.map((section) => (
-          <section
-            key={section.key}
-            className={`rounded-2xl border p-5 shadow-soft ${
-              section.key === "boxed_warning"
-                ? "border-destructive/40 bg-destructive/5"
-                : "border-border bg-card"
-            }`}
-          >
-            <h2 className="font-display text-lg font-semibold text-foreground">
+      {sections.length > 1 ? (
+        <nav
+          aria-label="Label sections"
+          className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-border bg-card p-4 shadow-soft"
+        >
+          {sections.map((section) => (
+            <a
+              key={section.key}
+              href={`#${section.key}`}
+              className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+            >
               {section.title}
-            </h2>
-            <div className="mt-3 space-y-3 border-l-2 border-primary/40 pl-4">
-              {section.paragraphs.map((paragraph, index) => (
-                <p
-                  key={index}
-                  className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground"
-                >
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </section>
-        ))}
+            </a>
+          ))}
+        </nav>
+      ) : null}
+
+      <div className="mt-8 space-y-6">
+        {sections.map((section) => {
+          const tone =
+            section.key === "boxed_warning"
+              ? "border-destructive/40 bg-destructive/5"
+              : section.key === "drug_interactions" || section.key === "contraindications"
+                ? "border-warning/40 bg-warning/10"
+                : "border-border bg-card";
+          const rule =
+            section.key === "boxed_warning"
+              ? "border-destructive/50"
+              : section.key === "drug_interactions" || section.key === "contraindications"
+                ? "border-warning/60"
+                : "border-primary/40";
+          return (
+            <section
+              key={section.key}
+              id={section.key}
+              className={`scroll-mt-24 rounded-2xl border p-5 shadow-soft ${tone}`}
+            >
+              <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-foreground">
+                {section.key === "boxed_warning" ? (
+                  <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
+                ) : null}
+                {section.title}
+              </h2>
+              <div className={`mt-3 space-y-3 border-l-2 pl-4 ${rule}`}>
+                {section.paragraphs.map((paragraph, index) => (
+                  <p
+                    key={index}
+                    className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground"
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+
         {sections.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             This label record contains no narrative sections.
