@@ -171,13 +171,6 @@ function SiteHeader() {
           >
             About
           </Link>
-          <Link
-            to="/repos"
-            className={linkClass}
-            activeProps={{ className: "bg-accent/70 text-accent-foreground" }}
-          >
-            Repos
-          </Link>
         </div>
 
       </nav>

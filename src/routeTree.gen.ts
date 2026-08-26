@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AskRouteImport } from './routes/ask'
-import { Route as ReposRouteImport } from './routes/repos'
 import { Route as DrugsIdRouteImport } from './routes/drugs.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -30,11 +29,6 @@ const AskRoute = AskRouteImport.update({
   path: '/ask',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReposRoute = ReposRouteImport.update({
-  id: '/repos',
-  path: '/repos',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DrugsIdRoute = DrugsIdRouteImport.update({
   id: '/drugs/$id',
   path: '/drugs/$id',
@@ -45,14 +39,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ask': typeof AskRoute
-  '/repos': typeof ReposRoute
   '/drugs/$id': typeof DrugsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ask': typeof AskRoute
-  '/repos': typeof ReposRoute
   '/drugs/$id': typeof DrugsIdRoute
 }
 export interface FileRoutesById {
@@ -60,22 +52,20 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ask': typeof AskRoute
-  '/repos': typeof ReposRoute
   '/drugs/$id': typeof DrugsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/ask' | '/repos' | '/drugs/$id'
+  fullPaths: '/' | '/about' | '/ask' | '/drugs/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/ask' | '/repos' | '/drugs/$id'
-  id: '__root__' | '/' | '/about' | '/ask' | '/repos' | '/drugs/$id'
+  to: '/' | '/about' | '/ask' | '/drugs/$id'
+  id: '__root__' | '/' | '/about' | '/ask' | '/drugs/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AskRoute: typeof AskRoute
-  ReposRoute: typeof ReposRoute
   DrugsIdRoute: typeof DrugsIdRoute
 }
 
@@ -102,13 +92,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AskRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/repos': {
-      id: '/repos'
-      path: '/repos'
-      fullPath: '/repos'
-      preLoaderRoute: typeof ReposRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/drugs/$id': {
       id: '/drugs/$id'
       path: '/drugs/$id'
@@ -123,7 +106,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AskRoute: AskRoute,
-  ReposRoute: ReposRoute,
   DrugsIdRoute: DrugsIdRoute,
 }
 export const routeTree = rootRouteImport
