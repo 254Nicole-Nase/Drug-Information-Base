@@ -53,6 +53,9 @@ export type LabelBlock =
 
 const BULLET_PREFIX = /^[•▪·*\u2022\u25AA-]\s+/;
 
+const LEAD_WORDS =
+  /^(warnings?|uses?|purposes?|directions?|description|indications and usage|drug interactions|adverse reactions|contraindications)$/i;
+
 function isHeading(line: string): boolean {
   if (line.length > 90) return false;
   const letters = line.replace(/[^A-Za-z]/g, "");
