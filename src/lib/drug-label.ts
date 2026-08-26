@@ -67,6 +67,48 @@ function splitSentences(text: string): string[] {
     .filter(Boolean);
 }
 
+/** Standard OTC/SPL cue phrases that act as sub-headings inside run-on label prose. */
+const CUE_PHRASES = [
+  "Allergy alert",
+  "Stomach bleeding warning",
+  "Heart attack and stroke warning",
+  "Liver warning",
+  "Caffeine warning",
+  "Sore throat warning",
+  "Do not use",
+  "Ask a doctor before use if",
+  "Ask a doctor or pharmacist before use if",
+  "Ask a doctor",
+  "When using this product",
+  "Stop use and ask a doctor if",
+  "Stop use and ask a doctor",
+  "If pregnant or breast-feeding",
+  "Keep out of reach of children",
+  "Other information",
+  "In case of overdose",
+];
+
+const CUE_REGEX = new RegExp(`(${CUE_PHRASES.map((cue) => cue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\s*:?\\s*`, "g");
+
+type Chunk = { heading: string | null; body: string };
+
+function splitOnCues(line: string): Chunk[] {
+  const chunks: Chunk[] = [];
+  let lastIndex = 0;
+  let current: string | null = null;
+  CUE_REGEX.lastIndex = 0;
+
+  for (let match = CUE_REGEX.exec(line); match; match = CUE_REGEX.exec(line)) {
+    const body = line.slice(lastIndex, match.index).trim();
+    if (body || current) chunks.push({ heading: current, body });
+    current = match[1] ?? null;
+    lastIndex = CUE_REGEX.lastIndex;
+  }
+  const tail = line.slice(lastIndex).trim();
+  if (tail || current) chunks.push({ heading: current, body: tail });
+  return chunks.length > 0 ? chunks : [{ heading: null, body: line }];
+}
+
 /**
  * Turns wall-of-text label prose into headings, bullet lists and short paragraphs.
  * `sentenceBullets` splits long safety prose into scannable one-sentence points.
@@ -95,14 +137,24 @@ export function parseLabelBlocks(
         blocks.push({ kind: "heading", text: line.replace(/:$/, "") });
         continue;
       }
-      const sentences = splitSentences(line);
-      if (options.sentenceBullets && line.length > 220 && sentences.length > 1) {
-        for (const sentence of sentences) pushBullet(sentence);
-        continue;
+
+      for (const chunk of splitOnCues(line)) {
+        if (chunk.heading) blocks.push({ kind: "heading", text: chunk.heading });
+        if (!chunk.body) continue;
+
+        const sentences = splitSentences(chunk.body);
+        if (options.sentenceBullets && sentences.length > 1 && chunk.body.length > 90) {
+          for (const sentence of sentences) pushBullet(sentence);
+        } else {
+          blocks.push({ kind: "text", text: chunk.body });
+        }
       }
-      blocks.push({ kind: "text", text: line });
     }
   }
+
+  return blocks;
+}
+
 
   return blocks;
 }
