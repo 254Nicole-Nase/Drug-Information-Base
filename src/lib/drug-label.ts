@@ -152,6 +152,10 @@ export function parseLabelBlocks(
     }
   }
 
+  // Labels often repeat the section name as the first words ("Warnings Allergy alert: ...").
+  const first = blocks[0];
+  if (first && first.kind !== "bullets" && LEAD_WORDS.test(first.text.trim())) blocks.shift();
+
   return blocks;
 }
 
