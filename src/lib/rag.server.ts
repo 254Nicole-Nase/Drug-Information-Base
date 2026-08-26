@@ -43,7 +43,7 @@ export async function embedAndStoreChunks(
   const embeddings = await embedTexts(chunks.map((c) => c.embedding_text));
 
   const { error: deleteError } = await supabaseAdmin
-    .from("label_chunks" as keyof Database["public"]["Tables"])
+    .from("label_chunks")
     .delete()
     .eq("label_id", label.id);
   if (deleteError) throw deleteError;
@@ -56,9 +56,7 @@ export async function embedAndStoreChunks(
     embedding: embeddings[index] as unknown as string,
   }));
 
-  const { error: insertError } = await supabaseAdmin
-    .from("label_chunks" as keyof Database["public"]["Tables"])
-    .insert(rows);
+  const { error: insertError } = await supabaseAdmin.from("label_chunks").insert(rows);
   if (insertError) throw insertError;
 
   return { chunksCount: chunks.length };
@@ -71,14 +69,11 @@ export async function searchCorpus(
   const [embedding] = await embedTexts([question]);
   const supabase = createPublishableClient();
 
-  const { data, error } = await supabase.rpc(
-    "match_chunks_hybrid" as keyof Database["public"]["Functions"],
-    {
-      query_embedding: embedding as unknown as string,
-      query_text: question,
-      match_count: matchCount,
-    } as never,
-  );
+  const { data, error } = await supabase.rpc("match_chunks_hybrid", {
+    query_embedding: embedding as unknown as string,
+    query_text: question,
+    match_count: matchCount,
+  });
   if (error) throw error;
 
   const rows = (data ?? []) as Array<{
@@ -95,26 +90,33 @@ export async function searchCorpus(
 
   const labelIds = [...new Set(rows.map((r) => r.label_id))];
   const { data: labels, error: labelsError } = await supabase
-    .from("drug_labels" as keyof Database["public"]["Tables"])
+    .from("drug_labels")
     .select("id, brand_name, generic_name, set_id")
-    .in("id", labelIds as never);
+    .in("id", labelIds);
   if (labelsError) throw labelsError;
 
+  const typedLabels = (labels ?? []) as Array<{
+    id: string;
+    brand_name: string | null;
+    generic_name: string | null;
+    set_id: string | null;
+  }>;
+
   const labelMap = new Map(
-    (labels ?? []).map((l) => [
+    typedLabels.map((l) => [
       l.id,
       {
-        brand_name: l.brand_name as string | null,
-        generic_name: l.generic_name as string | null,
-        set_id: l.set_id as string | null,
+        brand_name: l.brand_name,
+        generic_name: l.generic_name,
+        set_id: l.set_id,
       },
     ]),
   );
 
-  return rows.map((row) => ({
-    ...row,
-    label: labelMap.get(row.label_id),
-  }));
+  return rows.map((row) => {
+    const label = labelMap.get(row.label_id);
+    return label ? { ...row, label } : { ...row };
+  });
 }
 
 export function buildAnswerPrompt(context: string): string {
