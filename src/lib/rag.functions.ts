@@ -4,7 +4,7 @@ import { z } from "zod";
 import { generateAnswer } from "./ai.server";
 import { labelSchema, queryOpenFda } from "./openfda.server";
 import { buildAnswerPrompt, embedAndStoreChunks, searchCorpus } from "./rag.server";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 
 const idSchema = z.object({ id: z.string().min(1) });
 const querySchema = z.object({ query: z.string().trim().min(2).max(240) });
@@ -21,7 +21,7 @@ export const getLabelIngestionStatus = createServerFn({ method: "GET" })
     });
 
     const { count, error } = await supabase
-      .from("label_chunks" as keyof Database["public"]["Tables"])
+      .from("label_chunks")
       .select("id", { count: "exact", head: true })
       .eq("label_id", data.id);
     if (error) throw error;
