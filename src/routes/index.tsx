@@ -157,20 +157,27 @@ function Home() {
             </p>
           ) : null}
 
-          {!isFetching && data && data.length === 0 ? (
+          {!isFetching && data && data.labels.length === 0 ? (
             <p className="rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground shadow-soft">
-              No labels matched “{query}”. openFDA indexes US products only — try a generic
-              name such as “acetaminophen”.
+              No labels matched “{query}”. openFDA indexes US products only, and RxNorm had
+              no equivalent name to fall back on.
             </p>
           ) : null}
 
-          {data && data.length > 0 ? (
+          {data && data.labels.length > 0 ? (
             <>
               <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                {data.length} label{data.length === 1 ? "" : "s"} for “{query}”
+                {data.labels.length} label{data.labels.length === 1 ? "" : "s"} for “{query}”
               </h2>
+              {data.normalizedTo ? (
+                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-foreground">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                  RxNorm normalized “{data.normalizedFrom}” to “{data.normalizedTo}”
+                </p>
+              ) : null}
               <ul className="mt-4 grid gap-4 sm:grid-cols-2">
-                {data.map((label) => (
+                {data.labels.map((label) => (
+
                   <li key={label.id}>
                     <Link
                       to="/drugs/$id"
