@@ -7,7 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { Pill } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
+
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -100,8 +102,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap",
+      },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -125,28 +134,38 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function SiteHeader() {
   const linkClass =
-    "text-sm text-muted-foreground transition-colors hover:text-foreground";
+    "rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-accent-foreground";
   return (
-    <header className="border-b border-border">
-      <nav className="mx-auto flex max-w-4xl items-center gap-6 px-4 py-4 sm:px-6">
-        <Link to="/" className="font-semibold tracking-tight text-foreground">
-          Drug Info Center
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-md">
+      <nav className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3 sm:px-6">
+        <Link to="/" className="group flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
+            <Pill className="h-4 w-4 text-primary-foreground" aria-hidden="true" />
+          </span>
+          <span className="font-display text-[0.98rem] font-semibold tracking-tight text-foreground">
+            Drug Info Center
+          </span>
         </Link>
-        <div className="ml-auto flex items-center gap-5">
-          <Link to="/" className={linkClass} activeProps={{ className: "text-foreground" }}>
+        <div className="ml-auto flex items-center gap-1">
+          <Link
+            to="/"
+            className={linkClass}
+            activeOptions={{ exact: true }}
+            activeProps={{ className: "bg-accent/70 text-accent-foreground" }}
+          >
             Search
           </Link>
           <Link
             to="/about"
             className={linkClass}
-            activeProps={{ className: "text-foreground" }}
+            activeProps={{ className: "bg-accent/70 text-accent-foreground" }}
           >
             About
           </Link>
           <Link
             to="/repos"
             className={linkClass}
-            activeProps={{ className: "text-foreground" }}
+            activeProps={{ className: "bg-accent/70 text-accent-foreground" }}
           >
             Repos
           </Link>
@@ -158,14 +177,18 @@ function SiteHeader() {
 
 function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-border">
-      <div className="mx-auto max-w-4xl px-4 py-6 text-xs text-muted-foreground sm:px-6">
-        Data from the openFDA drug label API (public domain). Educational use only — not
-        medical advice.
+    <footer className="mt-20 border-t border-border bg-gradient-surface">
+      <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:px-6">
+        <p>
+          Data from the openFDA drug label API (public domain). Educational use only — not
+          medical advice.
+        </p>
+        <p className="sm:ml-auto">Built by Nicole Nase · Nairobi, Kenya</p>
       </div>
     </footer>
   );
 }
+
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();

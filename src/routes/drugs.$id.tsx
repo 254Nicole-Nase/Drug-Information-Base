@@ -60,19 +60,21 @@ function DrugDetail() {
     <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <Link
         to="/"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" /> Back to search
       </Link>
 
-      <header className="mt-6">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          {labelTitle(label)}
-        </h1>
-        {labelSubtitle(label) ? (
-          <p className="mt-1 text-lg text-muted-foreground">{labelSubtitle(label)}</p>
-        ) : null}
-        <dl className="mt-5 grid gap-3 rounded-xl border border-border bg-card p-4 text-sm sm:grid-cols-2">
+      <header className="mt-6 overflow-hidden rounded-3xl border border-border shadow-soft">
+        <div className="bg-gradient-hero px-6 py-8">
+          <h1 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl">
+            {labelTitle(label)}
+          </h1>
+          {labelSubtitle(label) ? (
+            <p className="mt-1 text-lg text-primary-foreground/75">{labelSubtitle(label)}</p>
+          ) : null}
+        </div>
+        <dl className="grid gap-4 bg-gradient-surface p-6 text-sm sm:grid-cols-2">
           <Meta term="Labeler" value={label.openfda?.manufacturer_name?.[0]} />
           <Meta term="Route" value={label.openfda?.route?.join(", ")} />
           <Meta term="Product type" value={label.openfda?.product_type?.[0]} />
@@ -84,11 +86,20 @@ function DrugDetail() {
 
       <Disclaimer className="mt-6" />
 
-      <div className="mt-8 space-y-8">
+      <div className="mt-8 space-y-6">
         {sections.map((section) => (
-          <section key={section.key}>
-            <h2 className="text-lg font-semibold text-foreground">{section.title}</h2>
-            <div className="mt-2 space-y-3 border-l-2 border-border pl-4">
+          <section
+            key={section.key}
+            className={`rounded-2xl border p-5 shadow-soft ${
+              section.key === "boxed_warning"
+                ? "border-destructive/40 bg-destructive/5"
+                : "border-border bg-card"
+            }`}
+          >
+            <h2 className="font-display text-lg font-semibold text-foreground">
+              {section.title}
+            </h2>
+            <div className="mt-3 space-y-3 border-l-2 border-primary/40 pl-4">
               {section.paragraphs.map((paragraph, index) => (
                 <p
                   key={index}
@@ -107,14 +118,14 @@ function DrugDetail() {
         ) : null}
       </div>
 
-      <footer className="mt-10 rounded-xl border border-border bg-muted/40 p-4 text-sm">
-        <h2 className="font-semibold text-foreground">Source</h2>
+      <footer className="mt-10 rounded-2xl border border-border bg-accent/40 p-5 text-sm">
+        <h2 className="font-display font-semibold text-foreground">Source</h2>
         <p className="mt-1 text-muted-foreground">
-          openFDA drug label record <code className="text-xs">{label.id}</code>
+          openFDA drug label record <code className="font-mono text-xs">{label.id}</code>
           {label.set_id ? (
             <>
               {" "}
-              · SPL set ID <code className="text-xs">{label.set_id}</code>
+              · SPL set ID <code className="font-mono text-xs">{label.set_id}</code>
             </>
           ) : null}
           {effective ? ` · effective ${effective}` : null}
@@ -124,7 +135,7 @@ function DrugDetail() {
             href={sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-1.5 text-foreground underline underline-offset-4"
+            className="mt-3 inline-flex items-center gap-1.5 font-medium text-primary underline underline-offset-4"
           >
             View the original label on DailyMed <ExternalLink className="h-3.5 w-3.5" />
           </a>
@@ -139,7 +150,8 @@ function Meta({ term, value }: { term: string; value: string | undefined }) {
   return (
     <div>
       <dt className="text-xs uppercase tracking-wide text-muted-foreground">{term}</dt>
-      <dd className="mt-0.5 text-card-foreground">{value}</dd>
+      <dd className="mt-0.5 font-medium text-card-foreground">{value}</dd>
     </div>
   );
 }
+

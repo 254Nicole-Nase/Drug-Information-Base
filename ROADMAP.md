@@ -24,7 +24,10 @@ The retrieval substrate everything else stands on.
       attribution (SPL set ID, effective date, labeler)
 - [x] "How this works / scope & limitations" page documenting the regulatory
       framing and data provenance
-- [ ] RxNorm/RxNav name normalization so `paracetamol` → `acetaminophen`
+- [x] RxNorm/RxNav name normalization so `paracetamol` → `acetaminophen`
+      (approximateTerm → rxcui → properties, used as a fallback when the direct
+      openFDA name search returns nothing; the UI shows the normalization)
+
 - [ ] Persist a local corpus (Postgres) instead of live API passthrough
 
 **Skills demonstrated:** API integration, schema validation (Zod), typed RPC,
