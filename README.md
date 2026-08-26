@@ -1,29 +1,89 @@
-# Welcome to your Lovable project
+# Drug Info Center
 
-This project was built with [Lovable](https://lovable.dev).
+A grounded, cited and **evaluated** drug-information assistant built on public
+regulatory data (openFDA structured product labels, RxNorm/RxNav, WHO ATC).
 
-## Build with Lovable
+> Educational and general drug information only. Not medical advice, not a
+> clinical decision-support tool. Every answer is grounded in a cited source
+> document; the system refuses patient-specific dosing, diagnosis and
+> off-label questions by design.
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Originally a PHP 8 + MySQL coursework CRUD app; rebuilt as a retrieval-augmented
+generation (RAG) application with a real evaluation suite.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+## What it does
 
-## Development
+| Route | Feature |
+| --- | --- |
+| `/` | Drug label search over openFDA, with RxNorm name normalization (`paracetamol` → `acetaminophen`) |
+| `/drugs/$id` | Full label view, structured warnings, "Add to corpus" ingestion |
+| `/ask` | Natural-language Q&A over the ingested corpus, hybrid retrieval, mandatory citations, refusal when unsupported |
+| `/interactions` | Pairwise interaction checker built from label `drug_interactions` sections, with severity hints and verbatim evidence |
+| `/kenya` | Kenyan-market availability: local brand equivalents, manufacturers, WHO ATC classes |
+| `/evals` | Live Ragas-style evaluation dashboard: faithfulness, answer relevance, context precision, refusal accuracy |
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## Architecture
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+```text
+openFDA / RxNav ──► ingestion (chunking + embeddings) ──► Postgres
+                                                          ├─ drug_labels
+                                                          ├─ label_chunks (pgvector + tsvector)
+                                                          └─ ke_products (Kenya reference)
+                                                                 │
+question ──► embed ──► match_chunks_hybrid (vector + BM25, RRF) ──► LLM synthesis ──► cited answer
+                                                                 │
+                                                        eval suite (LLM-as-judge)
 ```
 
-## Built with
+- **Framework:** TanStack Start (React 19, SSR, typed server functions), Vite 7, Tailwind v4
+- **Database:** Postgres with `pgvector`, row-level security, anon read-only policies
+- **Retrieval:** dense vector recall fused with full-text ranking via reciprocal-rank fusion
+- **AI:** embeddings (1536-dim) + answer synthesis behind a single swappable module
+  (`src/lib/ai.server.ts`)
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+## Notable engineering decisions
+
+- **The RxNav drug–drug interaction API was retired in January 2024**, so the
+  usual tutorial path no longer exists. `/interactions` instead extracts
+  cross-mentions from FDA label interaction sections and returns the *source
+  sentence* for every hit — never a generated claim.
+- **Grounding over fluency:** the answer prompt forbids uncited claims and the
+  adversarial eval set asserts the system refuses unsafe requests.
+- **Kenya reference data is labelled as a curated sample**, not the official
+  register, because the Pharmacy and Poisons Board publishes no API.
+
+## Running locally
+
+```sh
+bun install
+cp .env.example .env   # fill in your own values
+bun run dev
+```
+
+Scripts: `dev`, `build`, `lint`, `test`, `format`.
+
+Docker:
+
+```sh
+docker build -t drug-info-center .
+docker run -p 3000:3000 --env-file .env drug-info-center
+```
+
+Bringing your own Postgres/Supabase project: apply
+[`supabase/schema.sql`](supabase/schema.sql) and follow
+[`docs/SUPABASE_SETUP.md`](docs/SUPABASE_SETUP.md).
+
+## Testing and CI
+
+`bun run test` runs the unit suite (chunking, schema validation, query
+building). GitHub Actions runs lint, typecheck, tests and a production build on
+every push and pull request (`.github/workflows/ci.yml`). The RAG evaluation
+suite runs on demand from `/evals` because it calls a model.
+
+## Roadmap
+
+See [`ROADMAP.md`](ROADMAP.md).
+
+## Licence
+
+MIT.

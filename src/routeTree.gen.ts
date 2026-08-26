@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AskRouteImport } from './routes/ask'
 import { Route as EvalsRouteImport } from './routes/evals'
 import { Route as InteractionsRouteImport } from './routes/interactions'
+import { Route as KenyaRouteImport } from './routes/kenya'
 import { Route as DrugsIdRouteImport } from './routes/drugs.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,11 @@ const InteractionsRoute = InteractionsRouteImport.update({
   path: '/interactions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KenyaRoute = KenyaRouteImport.update({
+  id: '/kenya',
+  path: '/kenya',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DrugsIdRoute = DrugsIdRouteImport.update({
   id: '/drugs/$id',
   path: '/drugs/$id',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/ask': typeof AskRoute
   '/evals': typeof EvalsRoute
   '/interactions': typeof InteractionsRoute
+  '/kenya': typeof KenyaRoute
   '/drugs/$id': typeof DrugsIdRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/ask': typeof AskRoute
   '/evals': typeof EvalsRoute
   '/interactions': typeof InteractionsRoute
+  '/kenya': typeof KenyaRoute
   '/drugs/$id': typeof DrugsIdRoute
 }
 export interface FileRoutesById {
@@ -70,13 +78,28 @@ export interface FileRoutesById {
   '/ask': typeof AskRoute
   '/evals': typeof EvalsRoute
   '/interactions': typeof InteractionsRoute
+  '/kenya': typeof KenyaRoute
   '/drugs/$id': typeof DrugsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/ask' | '/evals' | '/interactions' | '/drugs/$id'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/ask'
+    | '/evals'
+    | '/interactions'
+    | '/kenya'
+    | '/drugs/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/ask' | '/evals' | '/interactions' | '/drugs/$id'
+  to:
+    | '/'
+    | '/about'
+    | '/ask'
+    | '/evals'
+    | '/interactions'
+    | '/kenya'
+    | '/drugs/$id'
   id:
     | '__root__'
     | '/'
@@ -84,6 +107,7 @@ export interface FileRouteTypes {
     | '/ask'
     | '/evals'
     | '/interactions'
+    | '/kenya'
     | '/drugs/$id'
   fileRoutesById: FileRoutesById
 }
@@ -93,6 +117,7 @@ export interface RootRouteChildren {
   AskRoute: typeof AskRoute
   EvalsRoute: typeof EvalsRoute
   InteractionsRoute: typeof InteractionsRoute
+  KenyaRoute: typeof KenyaRoute
   DrugsIdRoute: typeof DrugsIdRoute
 }
 
@@ -133,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InteractionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kenya': {
+      id: '/kenya'
+      path: '/kenya'
+      fullPath: '/kenya'
+      preLoaderRoute: typeof KenyaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/drugs/$id': {
       id: '/drugs/$id'
       path: '/drugs/$id'
@@ -149,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   AskRoute: AskRoute,
   EvalsRoute: EvalsRoute,
   InteractionsRoute: InteractionsRoute,
+  KenyaRoute: KenyaRoute,
   DrugsIdRoute: DrugsIdRoute,
 }
 export const routeTree = rootRouteImport

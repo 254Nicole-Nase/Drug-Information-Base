@@ -145,3 +145,39 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.match_chunks_vector(vector(1536), float, int) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.match_chunks_hybrid(vector(1536), text, int) TO anon, authenticated;
+
+-- ------------------------------------------------- Kenya reference data ----
+-- Curated Pharmacy and Poisons Board product sample (no public API exists).
+-- Seed rows live in the migration history; this DDL is the portable part.
+
+CREATE TABLE IF NOT EXISTS public.ke_products (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  brand_name text NOT NULL,
+  generic_name text NOT NULL,
+  generic_key text NOT NULL,
+  strength text,
+  dosage_form text,
+  manufacturer text,
+  country_of_origin text,
+  registration_status text NOT NULL DEFAULT 'listed',
+  ppb_registration_no text,
+  atc_code text,
+  atc_class text,
+  data_source text NOT NULL DEFAULT 'curated-sample',
+  verification_note text NOT NULL DEFAULT 'Curated sample — verify against the official Pharmacy and Poisons Board register before relying on it.',
+  source_url text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ke_products_generic_key ON public.ke_products (generic_key);
+CREATE INDEX IF NOT EXISTS idx_ke_products_atc ON public.ke_products (atc_code);
+
+GRANT SELECT ON public.ke_products TO anon, authenticated;
+GRANT ALL ON public.ke_products TO service_role;
+
+ALTER TABLE public.ke_products ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can read Kenya products" ON public.ke_products;
+CREATE POLICY "Anyone can read Kenya products"
+  ON public.ke_products FOR SELECT TO anon, authenticated USING (true);

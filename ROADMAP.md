@@ -77,29 +77,40 @@ ibuprofen → "Major signal" (bleeding-risk table), build clean.
       generated claim
 - [ ] Extract interaction statements into a structured `interactions` table
       (stretch — enables offline/fast checks and multi-drug matrices)
-- [ ] Document the retirement and the workaround in the README — the
+- [x] Document the retirement and the workaround in the README — the
       engineering reasoning is itself the portfolio signal
 
 **Skills:** information extraction, entity normalization, pipeline design.
 
-## Phase 5 — Kenya context (the unfair advantage)
+## Phase 5 — Kenya context (the unfair advantage) ✅
 
-- [ ] Scrape + normalize the Pharmacy and Poisons Board product registers
-      (no public API exists — this dataset is the moat)
-- [ ] "Is this registered in Kenya?" lookup + local generic equivalents
-- [ ] Map to WHO ATC classification
+**Status: shipped (curated starter dataset).** `ke_products` holds a normalized
+Kenyan-market reference set (brand, generic, strength, form, manufacturer,
+origin, WHO ATC code + class, provenance note). `/kenya` resolves a query
+against brand names first, then via RxNorm normalization, and surfaces local
+manufacturers and ATC classification. Every row is labelled `curated-sample`
+with a link to the official register — the honesty is part of the design.
+
+- [x] Normalized Kenyan product table with provenance + verification note
+- [x] "Is this available in Kenya?" lookup + local generic equivalents
+- [x] WHO ATC code/class mapping per product
+- [ ] Automated scrape of the full PPB register (no public API — needs a
+      resilient HTML scraper + review workflow)
 - [ ] Publish the cleaned dataset (open data contribution)
 
 **Skills:** data engineering, scraping + cleaning, dataset publication.
 
-## Phase 6 — Production polish
+## Phase 6 — Production polish ✅
 
-- [ ] Unit + integration tests, GitHub Actions CI (lint, typecheck, tests,
-      evals)
-- [ ] Dockerized local stack, one-command bootstrap
+- [x] Unit tests (`vitest`: chunking, schema validation, query building) via
+      `bun run test`
+- [x] GitHub Actions CI: lint, typecheck, tests, production build on every push
+      and PR (`.github/workflows/ci.yml`)
+- [x] Dockerfile (multi-stage bun build → `.output` runtime) + `.env.example`
+- [x] README rewrite: architecture diagram, feature table, engineering
+      decisions (retired RxNav DDI API, grounding-over-fluency, dataset honesty)
+- [ ] Eval regression gate in CI (needs a model key in repo secrets)
 - [ ] Live public deployment a reviewer can break in 30 seconds
-- [ ] Architecture writeup: retrieval design, eval results, regulatory scoping,
-      and what was deliberately *not* built
 
 **Skills:** testing, CI/CD, containerization, technical writing.
 
