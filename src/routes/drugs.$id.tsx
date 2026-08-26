@@ -1,16 +1,29 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { AlertTriangle, ArrowLeft, ExternalLink } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ChevronDown, ExternalLink } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { Disclaimer } from "@/components/Disclaimer";
 import {
+  blockCount,
   dailyMedUrl,
   formatEffectiveTime,
   labelSections,
   labelSubtitle,
   labelTitle,
+  parseLabelBlocks,
 } from "@/lib/drug-label";
 import { getDrugLabel } from "@/lib/openfda.functions";
+
+const SAFETY_SECTIONS = new Set([
+  "boxed_warning",
+  "warnings",
+  "drug_interactions",
+  "contraindications",
+  "adverse_reactions",
+  "pregnancy",
+]);
+
 
 const labelQueryOptions = (id: string) => ({
   queryKey: ["openfda", "label", id],
