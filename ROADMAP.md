@@ -60,16 +60,23 @@ grounding/refusal behaviour.
 **Skills:** LLM evals, faithfulness/hallucination measurement, observability,
 CI-gated quality.
 
-## Phase 4 — Interaction checker (work around the dead API)
+## Phase 4 — Interaction checker (work around the dead API) ✅
 
 The NLM/RxNav free drug–drug interaction API was **retired in January 2024**,
 so the usual tutorial path does not exist any more.
 
-- [ ] Extract interaction statements from openFDA label `drug_interactions`
-      free text into a structured `interactions` table
-- [ ] Normalize the mentioned drugs to RxNorm concepts
-- [ ] Pairwise checker returning the *source sentence* for every hit, never a
+**Status: shipped (label-based variant).** `/interactions` normalizes each drug
+via RxNav, pulls the `drug_interactions` sections of matching openFDA labels,
+detects cross-mentions between the queried drugs, classifies a severity hint
+(contraindicated / major / mentioned) from the surrounding prose, dedupes
+evidence, and cites the source labels with links. Verified: warfarin ×
+ibuprofen → "Major signal" (bleeding-risk table), build clean.
+
+- [x] Normalize the mentioned drugs to RxNorm concepts (via RxNav)
+- [x] Pairwise checker returning the *source sentence* for every hit, never a
       generated claim
+- [ ] Extract interaction statements into a structured `interactions` table
+      (stretch — enables offline/fast checks and multi-drug matrices)
 - [ ] Document the retirement and the workaround in the README — the
       engineering reasoning is itself the portfolio signal
 
