@@ -9,7 +9,28 @@ import type { Database } from "@/integrations/supabase/types";
 const idSchema = z.object({ id: z.string().min(1) });
 const querySchema = z.object({ query: z.string().trim().min(2).max(240) });
 
+export const getLabelIngestionStatus = createServerFn({ method: "GET" })
+  .inputValidator((data: unknown) => idSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const url = process.env["SUPABASE_URL"];
+    const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+    if (!url || !key) throw new Error("Supabase credentials missing");
+    const supabase = createClient<Database>(url, key, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    const { count, error } = await supabase
+      .from("label_chunks" as keyof Database["public"]["Tables"])
+      .select("id", { count: "exact", head: true })
+      .eq("label_id", data.id);
+    if (error) throw error;
+
+    return { ingested: (count ?? 0) > 0, chunksCount: count ?? 0 };
+  });
+
 export const ingestDrugLabel = createServerFn({ method: "POST" })
+
   .inputValidator((data: unknown) => idSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
