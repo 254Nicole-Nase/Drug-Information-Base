@@ -35,7 +35,7 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
 export async function generateAnswer(
   system: string,
   messages: Array<{ role: "user"; content: string }>,
-  model = "openai/gpt-5-mini",
+  model = "google/gemini-2.5-flash",
 ): Promise<string> {
   const response = await fetch(`${AIG_BASE}/chat/completions`, {
     method: "POST",
@@ -45,11 +45,12 @@ export async function generateAnswer(
     },
     body: JSON.stringify({
       model,
+      temperature: 0.2,
       max_tokens: 900,
       messages: [{ role: "system", content: system }, ...messages],
     }),
-
   });
+
 
   if (!response.ok) {
     const body = await response.text();
