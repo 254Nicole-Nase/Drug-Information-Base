@@ -46,6 +46,71 @@ export function labelSections(label: DrugLabel): LabelSection[] {
   });
 }
 
+export type LabelBlock =
+  | { kind: "heading"; text: string }
+  | { kind: "bullets"; items: string[] }
+  | { kind: "text"; text: string };
+
+const BULLET_PREFIX = /^[•▪·*\u2022\u25AA-]\s+/;
+
+function isHeading(line: string): boolean {
+  if (line.length > 90) return false;
+  const letters = line.replace(/[^A-Za-z]/g, "");
+  if (letters.length >= 3 && letters === letters.toUpperCase()) return true;
+  return /:$/.test(line) && line.split(/\s+/).length <= 12;
+}
+
+function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.;])\s+(?=[A-Z(“"])/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Turns wall-of-text label prose into headings, bullet lists and short paragraphs.
+ * `sentenceBullets` splits long safety prose into scannable one-sentence points.
+ */
+export function parseLabelBlocks(
+  paragraphs: string[],
+  options: { sentenceBullets?: boolean } = {},
+): LabelBlock[] {
+  const blocks: LabelBlock[] = [];
+  const pushBullet = (item: string) => {
+    const last = blocks[blocks.length - 1];
+    if (last && last.kind === "bullets") last.items.push(item);
+    else blocks.push({ kind: "bullets", items: [item] });
+  };
+
+  for (const paragraph of paragraphs) {
+    for (const rawLine of paragraph.split(/\n+/)) {
+      const line = rawLine.trim();
+      if (!line) continue;
+
+      if (BULLET_PREFIX.test(line)) {
+        pushBullet(line.replace(BULLET_PREFIX, "").trim());
+        continue;
+      }
+      if (isHeading(line)) {
+        blocks.push({ kind: "heading", text: line.replace(/:$/, "") });
+        continue;
+      }
+      const sentences = splitSentences(line);
+      if (options.sentenceBullets && line.length > 220 && sentences.length > 1) {
+        for (const sentence of sentences) pushBullet(sentence);
+        continue;
+      }
+      blocks.push({ kind: "text", text: line });
+    }
+  }
+
+  return blocks;
+}
+
+export function blockCount(blocks: LabelBlock[]): number {
+  return blocks.reduce((total, block) => total + (block.kind === "bullets" ? block.items.length : 1), 0);
+}
+
 /** openFDA effective_time is YYYYMMDD. */
 export function formatEffectiveTime(value: string | undefined): string | null {
   if (!value || value.length !== 8) return null;
