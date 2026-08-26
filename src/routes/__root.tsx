@@ -77,12 +77,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Drug Info Center" },
+      {
+        name: "description",
+        content:
+          "A grounded drug label reference built on public regulatory data. Educational use only.",
+      },
+      { name: "author", content: "Nicole Nase" },
+      { property: "og:title", content: "Drug Info Center" },
+      {
+        property: "og:description",
+        content:
+          "A grounded drug label reference built on public regulatory data. Educational use only.",
+      },
       { property: "og:type", content: "website" },
+
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
     ],
@@ -114,13 +123,64 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function SiteHeader() {
+  const linkClass =
+    "text-sm text-muted-foreground transition-colors hover:text-foreground";
+  return (
+    <header className="border-b border-border">
+      <nav className="mx-auto flex max-w-4xl items-center gap-6 px-4 py-4 sm:px-6">
+        <Link to="/" className="font-semibold tracking-tight text-foreground">
+          Drug Info Center
+        </Link>
+        <div className="ml-auto flex items-center gap-5">
+          <Link to="/" className={linkClass} activeProps={{ className: "text-foreground" }}>
+            Search
+          </Link>
+          <Link
+            to="/about"
+            className={linkClass}
+            activeProps={{ className: "text-foreground" }}
+          >
+            About
+          </Link>
+          <Link
+            to="/repos"
+            className={linkClass}
+            activeProps={{ className: "text-foreground" }}
+          >
+            Repos
+          </Link>
+        </div>
+      </nav>
+    </header>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="mt-16 border-t border-border">
+      <div className="mx-auto max-w-4xl px-4 py-6 text-xs text-muted-foreground sm:px-6">
+        Data from the openFDA drug label API (public domain). Educational use only — not
+        medical advice.
+      </div>
+    </footer>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="flex min-h-screen flex-col bg-background">
+        <SiteHeader />
+        <main className="flex-1">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </main>
+        <SiteFooter />
+      </div>
     </QueryClientProvider>
   );
 }
+
