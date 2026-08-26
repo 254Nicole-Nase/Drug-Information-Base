@@ -41,25 +41,23 @@ export const ingestDrugLabel = createServerFn({ method: "POST" })
 
     const parsed = labelSchema.parse(label);
 
-    const { error: upsertError } = await supabaseAdmin
-      .from("drug_labels" as keyof Database["public"]["Tables"])
-      .upsert(
-        {
-          id: parsed.id,
-          set_id: parsed.set_id,
-          effective_time: parsed.effective_time,
-          brand_name: parsed.openfda?.brand_name?.[0] ?? null,
-          generic_name: parsed.openfda?.generic_name?.[0] ?? null,
-          substance_name: parsed.openfda?.substance_name?.[0] ?? null,
-          manufacturer_name: parsed.openfda?.manufacturer_name?.[0] ?? null,
-          route: parsed.openfda?.route?.join(", ") ?? null,
-          product_type: parsed.openfda?.product_type?.[0] ?? null,
-          pharmacologic_class: parsed.openfda?.pharm_class_epc ?? [],
-          rxcui: parsed.openfda?.rxcui ?? [],
-          label_json: parsed as unknown as Record<string, unknown>,
-        },
-        { onConflict: "id" },
-      );
+    const { error: upsertError } = await supabaseAdmin.from("drug_labels").upsert(
+      {
+        id: parsed.id,
+        set_id: parsed.set_id,
+        effective_time: parsed.effective_time,
+        brand_name: parsed.openfda?.brand_name?.[0] ?? null,
+        generic_name: parsed.openfda?.generic_name?.[0] ?? null,
+        substance_name: parsed.openfda?.substance_name?.[0] ?? null,
+        manufacturer_name: parsed.openfda?.manufacturer_name?.[0] ?? null,
+        route: parsed.openfda?.route?.join(", ") ?? null,
+        product_type: parsed.openfda?.product_type?.[0] ?? null,
+        pharmacologic_class: parsed.openfda?.pharm_class_epc ?? [],
+        rxcui: parsed.openfda?.rxcui ?? [],
+        label_json: parsed as unknown as Json,
+      },
+      { onConflict: "id" },
+    );
     if (upsertError) throw upsertError;
 
     const { chunksCount } = await embedAndStoreChunks(parsed, supabaseAdmin);
@@ -79,15 +77,14 @@ export const getCorpusStatus = createServerFn({ method: "GET" })
     });
 
     const [{ count: labels }, { count: chunks }] = await Promise.all([
-      supabase.from("drug_labels" as keyof Database["public"]["Tables"]).select("id", { count: "exact", head: true }),
-      supabase.from("label_chunks" as keyof Database["public"]["Tables"]).select("id", { count: "exact", head: true }),
+      supabase.from("drug_labels").select("id", { count: "exact", head: true }),
+      supabase.from("label_chunks").select("id", { count: "exact", head: true }),
     ]);
 
     return {
       labelsCount: labels ?? 0,
       chunksCount: chunks ?? 0,
     };
-
   });
 
 export const searchCorpusFn = createServerFn({ method: "POST" })
