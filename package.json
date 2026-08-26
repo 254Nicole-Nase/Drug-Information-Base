@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "export:corpus": "bun run scripts/export-corpus.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"
