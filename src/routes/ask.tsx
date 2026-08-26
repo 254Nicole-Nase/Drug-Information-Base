@@ -147,7 +147,17 @@ function Ask() {
         </div>
       ) : null}
 
+      {answerMutation.error ? (
+        <div className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive shadow-soft">
+          <p className="font-medium">Answer failed</p>
+          <p className="mt-1">
+            {answerMutation.error instanceof Error ? answerMutation.error.message : "Something went wrong"}
+          </p>
+        </div>
+      ) : null}
+
       {answerMutation.data ? (
+
         <div className="mt-6 space-y-6">
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="font-display font-semibold text-card-foreground">Answer</h2>
