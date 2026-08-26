@@ -78,15 +78,16 @@ export const getCorpusStatus = createServerFn({ method: "GET" })
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const [{ data: labels }, { data: chunks }] = await Promise.all([
+    const [{ count: labels }, { count: chunks }] = await Promise.all([
       supabase.from("drug_labels" as keyof Database["public"]["Tables"]).select("id", { count: "exact", head: true }),
       supabase.from("label_chunks" as keyof Database["public"]["Tables"]).select("id", { count: "exact", head: true }),
     ]);
 
     return {
-      labelsCount: labels?.length ?? 0,
-      chunksCount: chunks?.length ?? 0,
+      labelsCount: labels ?? 0,
+      chunksCount: chunks ?? 0,
     };
+
   });
 
 export const searchCorpusFn = createServerFn({ method: "POST" })
