@@ -15,10 +15,10 @@ export interface InteractionFinding {
   /** The sentence(s) mentioning the other drug */
   evidence: string[];
   severityHint: "contraindicated" | "major" | "moderate" | "unknown";
-  labelIdA?: string;
-  labelIdB?: string;
-  brandA?: string;
-  brandB?: string;
+  labelIdA?: string | undefined;
+  labelIdB?: string | undefined;
+  brandA?: string | undefined;
+  brandB?: string | undefined;
 }
 
 export interface InteractionCheckResult {
