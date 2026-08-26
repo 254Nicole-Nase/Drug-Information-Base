@@ -62,6 +62,66 @@ export type Database = {
         }
         Relationships: []
       }
+      ke_products: {
+        Row: {
+          atc_class: string | null
+          atc_code: string | null
+          brand_name: string
+          country_of_origin: string | null
+          created_at: string
+          data_source: string
+          dosage_form: string | null
+          generic_key: string
+          generic_name: string
+          id: string
+          manufacturer: string | null
+          ppb_registration_no: string | null
+          registration_status: string
+          source_url: string | null
+          strength: string | null
+          updated_at: string
+          verification_note: string
+        }
+        Insert: {
+          atc_class?: string | null
+          atc_code?: string | null
+          brand_name: string
+          country_of_origin?: string | null
+          created_at?: string
+          data_source?: string
+          dosage_form?: string | null
+          generic_key: string
+          generic_name: string
+          id?: string
+          manufacturer?: string | null
+          ppb_registration_no?: string | null
+          registration_status?: string
+          source_url?: string | null
+          strength?: string | null
+          updated_at?: string
+          verification_note?: string
+        }
+        Update: {
+          atc_class?: string | null
+          atc_code?: string | null
+          brand_name?: string
+          country_of_origin?: string | null
+          created_at?: string
+          data_source?: string
+          dosage_form?: string | null
+          generic_key?: string
+          generic_name?: string
+          id?: string
+          manufacturer?: string | null
+          ppb_registration_no?: string | null
+          registration_status?: string
+          source_url?: string | null
+          strength?: string | null
+          updated_at?: string
+          verification_note?: string
+        }
+        Relationships: []
+      }
       label_chunks: {
         Row: {
           content: string
