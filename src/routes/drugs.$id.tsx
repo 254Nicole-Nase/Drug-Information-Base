@@ -1,9 +1,20 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { AlertTriangle, ArrowLeft, ChevronDown, ExternalLink } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ChevronDown,
+  Database,
+  ExternalLink,
+  Loader2,
+  Plus,
+} from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { Disclaimer } from "@/components/Disclaimer";
+import { Button } from "@/components/ui/button";
 import {
   blockCount,
   dailyMedUrl,
@@ -14,6 +25,8 @@ import {
   parseLabelBlocks,
 } from "@/lib/drug-label";
 import { getDrugLabel } from "@/lib/openfda.functions";
+import { getLabelIngestionStatus, ingestDrugLabel } from "@/lib/rag.functions";
+
 
 const SAFETY_SECTIONS = new Set([
   "boxed_warning",
