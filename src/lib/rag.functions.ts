@@ -44,8 +44,8 @@ export const ingestDrugLabel = createServerFn({ method: "POST" })
     const { error: upsertError } = await supabaseAdmin.from("drug_labels").upsert(
       {
         id: parsed.id,
-        set_id: parsed.set_id,
-        effective_time: parsed.effective_time,
+        set_id: parsed.set_id ?? null,
+        effective_time: parsed.effective_time ?? null,
         brand_name: parsed.openfda?.brand_name?.[0] ?? null,
         generic_name: parsed.openfda?.generic_name?.[0] ?? null,
         substance_name: parsed.openfda?.substance_name?.[0] ?? null,
