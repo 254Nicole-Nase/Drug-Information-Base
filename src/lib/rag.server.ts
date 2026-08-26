@@ -1,9 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 import { embedTexts } from "./ai.server";
 import { chunkSection, type ChunkInput } from "./chunks.server";
-import { labelSections, type DrugLabel } from "./drug-label";
+import { labelSections } from "./drug-label";
+import type { DrugLabel } from "./openfda.functions";
 
 export type ChunkResult = {
   chunk_id: string;
@@ -31,7 +32,7 @@ function createPublishableClient() {
 
 export async function embedAndStoreChunks(
   label: DrugLabel,
-  supabaseAdmin: ReturnType<typeof import("@/integrations/supabase/client.server").supabaseAdmin>,
+  supabaseAdmin: SupabaseClient<Database>,
 ) {
   const chunks: ChunkInput[] = labelSections(label).flatMap((section) =>
     chunkSection(section.key, section.title, section.paragraphs),
