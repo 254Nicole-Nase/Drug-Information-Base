@@ -105,18 +105,19 @@ function DrugDetail() {
 
       <div className="mt-8 space-y-6">
         {sections.map((section) => {
-          const tone =
-            section.key === "boxed_warning"
-              ? "border-destructive/40 bg-destructive/5"
-              : section.key === "drug_interactions" || section.key === "contraindications"
-                ? "border-warning/40 bg-warning/10"
-                : "border-border bg-card";
-          const rule =
-            section.key === "boxed_warning"
-              ? "border-destructive/50"
-              : section.key === "drug_interactions" || section.key === "contraindications"
-                ? "border-warning/60"
-                : "border-primary/40";
+          const isCritical = section.key === "boxed_warning";
+          const isCaution =
+            section.key === "drug_interactions" || section.key === "contraindications";
+          const tone = isCritical
+            ? "border-destructive/40 bg-destructive/5"
+            : isCaution
+              ? "border-warning/40 bg-warning/10"
+              : "border-border bg-card";
+          const rule = isCritical
+            ? "border-destructive/50"
+            : isCaution
+              ? "border-warning/60"
+              : "border-primary/40";
           return (
             <section
               key={section.key}
@@ -124,21 +125,17 @@ function DrugDetail() {
               className={`scroll-mt-24 rounded-2xl border p-5 shadow-soft ${tone}`}
             >
               <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-foreground">
-                {section.key === "boxed_warning" ? (
+                {isCritical ? (
                   <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
                 ) : null}
                 {section.title}
               </h2>
-              <div className={`mt-3 space-y-3 border-l-2 pl-4 ${rule}`}>
-                {section.paragraphs.map((paragraph, index) => (
-                  <p
-                    key={index}
-                    className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground"
-                  >
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
+              <SectionBody
+                paragraphs={section.paragraphs}
+                sentenceBullets={SAFETY_SECTIONS.has(section.key)}
+                rule={rule}
+                marker={isCritical ? "bg-destructive" : isCaution ? "bg-warning" : "bg-primary"}
+              />
             </section>
           );
         })}
@@ -149,6 +146,7 @@ function DrugDetail() {
           </p>
         ) : null}
       </div>
+
 
       <footer className="mt-10 rounded-2xl border border-border bg-accent/40 p-5 text-sm">
         <h2 className="font-display font-semibold text-foreground">Source</h2>
