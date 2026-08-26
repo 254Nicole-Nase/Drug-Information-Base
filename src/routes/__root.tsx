@@ -165,6 +165,13 @@ function SiteHeader() {
             Ask
           </Link>
           <Link
+            to="/interactions"
+            className={linkClass}
+            activeProps={{ className: "bg-accent/70 text-accent-foreground" }}
+          >
+            Interactions
+          </Link>
+          <Link
             to="/evals"
             className={linkClass}
             activeProps={{ className: "bg-accent/70 text-accent-foreground" }}
