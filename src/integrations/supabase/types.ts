@@ -14,13 +14,131 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      drug_labels: {
+        Row: {
+          brand_name: string | null
+          created_at: string
+          effective_time: string | null
+          generic_name: string | null
+          id: string
+          label_json: Json
+          manufacturer_name: string | null
+          pharmacologic_class: string[] | null
+          product_type: string | null
+          route: string | null
+          rxcui: string[] | null
+          set_id: string | null
+          substance_name: string | null
+        }
+        Insert: {
+          brand_name?: string | null
+          created_at?: string
+          effective_time?: string | null
+          generic_name?: string | null
+          id: string
+          label_json: Json
+          manufacturer_name?: string | null
+          pharmacologic_class?: string[] | null
+          product_type?: string | null
+          route?: string | null
+          rxcui?: string[] | null
+          set_id?: string | null
+          substance_name?: string | null
+        }
+        Update: {
+          brand_name?: string | null
+          created_at?: string
+          effective_time?: string | null
+          generic_name?: string | null
+          id?: string
+          label_json?: Json
+          manufacturer_name?: string | null
+          pharmacologic_class?: string[] | null
+          product_type?: string | null
+          route?: string | null
+          rxcui?: string[] | null
+          set_id?: string | null
+          substance_name?: string | null
+        }
+        Relationships: []
+      }
+      label_chunks: {
+        Row: {
+          content: string
+          created_at: string
+          embedding: string | null
+          id: string
+          label_id: string
+          search_tsv: unknown
+          section_key: string
+          section_title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          label_id: string
+          search_tsv?: unknown
+          section_key: string
+          section_title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          label_id?: string
+          search_tsv?: unknown
+          section_key?: string
+          section_title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "label_chunks_label_id_fkey"
+            columns: ["label_id"]
+            isOneToOne: false
+            referencedRelation: "drug_labels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      match_chunks_hybrid: {
+        Args: {
+          match_count: number
+          query_embedding: string
+          query_text: string
+        }
+        Returns: {
+          chunk_id: string
+          content: string
+          keyword_rank: number
+          label_id: string
+          section_key: string
+          section_title: string
+          similarity: number
+        }[]
+      }
+      match_chunks_vector: {
+        Args: {
+          match_count: number
+          match_threshold: number
+          query_embedding: string
+        }
+        Returns: {
+          chunk_id: string
+          content: string
+          label_id: string
+          section_key: string
+          section_title: string
+          similarity: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
