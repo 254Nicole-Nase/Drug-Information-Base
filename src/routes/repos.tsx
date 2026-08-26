@@ -8,7 +8,7 @@ const TITLE = "Connected GitHub repositories — Drug Info Center";
 const DESCRIPTION =
   "The GitHub repositories connected to this workspace, listed by most recently updated.";
 
-const reposQueryOptions = {
+export const reposQueryOptions = {
   queryKey: ["github", "repos"],
   queryFn: () => listGitHubRepos(),
 };

@@ -50,11 +50,12 @@ const SOURCES = [
 const ROADMAP = [
   { done: true, label: "openFDA label search and cited detail pages" },
   { done: true, label: "RxNorm name normalization with a visible normalization notice" },
-  { done: false, label: "Local Postgres corpus + pgvector hybrid retrieval" },
-  { done: false, label: "Cited answer synthesis with low-confidence refusal" },
+  { done: true, label: "Local Postgres corpus + pgvector hybrid retrieval" },
+  { done: true, label: "Cited answer synthesis with low-confidence refusal" },
   { done: false, label: "Evaluation suite: faithfulness, relevance, adversarial refusals" },
   { done: false, label: "Kenyan Pharmacy and Poisons Board registration lookup" },
 ];
+
 
 function About() {
   return (

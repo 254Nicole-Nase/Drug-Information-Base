@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 import { Pill } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "sonner";
+
 
 
 import appCss from "../styles.css?url";
@@ -156,6 +158,13 @@ function SiteHeader() {
             Search
           </Link>
           <Link
+            to="/ask"
+            className={linkClass}
+            activeProps={{ className: "bg-accent/70 text-accent-foreground" }}
+          >
+            Ask
+          </Link>
+          <Link
             to="/about"
             className={linkClass}
             activeProps={{ className: "bg-accent/70 text-accent-foreground" }}
@@ -170,6 +179,7 @@ function SiteHeader() {
             Repos
           </Link>
         </div>
+
       </nav>
     </header>
   );
@@ -202,8 +212,10 @@ function RootComponent() {
           <Outlet />
         </main>
         <SiteFooter />
+        <Toaster position="bottom-right" richColors />
       </div>
     </QueryClientProvider>
   );
 }
+
 
