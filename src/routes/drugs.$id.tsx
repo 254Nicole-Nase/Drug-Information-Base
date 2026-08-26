@@ -134,7 +134,7 @@ function DrugDetail() {
   );
 }
 
-function Meta({ term, value }: { term: string; value?: string }) {
+function Meta({ term, value }: { term: string; value: string | undefined }) {
   if (!value) return null;
   return (
     <div>
