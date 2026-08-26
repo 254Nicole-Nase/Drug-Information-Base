@@ -125,10 +125,12 @@ function DrugDetail() {
               type="button"
               variant="secondary"
               size="sm"
+              data-testid="ingest-button"
               disabled={ingestMutation.isPending}
               onClick={() => ingestMutation.mutate()}
               className="shrink-0 gap-1.5 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
             >
+
               {ingestMutation.isPending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : status?.ingested ? (
