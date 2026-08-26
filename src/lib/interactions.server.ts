@@ -93,7 +93,7 @@ async function rxnavNormalize(name: string): Promise<string> {
 
 interface LabelInfo {
   id: string;
-  brand?: string;
+  brand?: string | undefined;
   interactionsText: string;
 }
 
