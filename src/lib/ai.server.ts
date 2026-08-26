@@ -61,7 +61,6 @@ export async function generateAnswer(
   const json = (await response.json()) as {
     choices: Array<{ message: { content: string | null }; finish_reason?: string }>;
   };
-  console.log("AI gateway response:", JSON.stringify(json));
   return json.choices[0]?.message?.content?.trim() ?? "";
 }
 
