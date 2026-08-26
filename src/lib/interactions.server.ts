@@ -29,7 +29,7 @@ export interface InteractionCheckResult {
 }
 
 const MAJOR_WORDS =
-  /\b(contraindicated|avoid (concomitant |co-?)?use|do not (co-?)?administer|serious|life[- ]threatening|severe|significant(ly)? (increase|decrease)s? (the )?(risk|plasma|exposure)|major)\b/i;
+  /\b(contraindicated|avoid (concomitant |co-?)?use|do not (co-?)?administer|serious|life[- ]threatening|severe|significant(ly)? (increase|decrease)s? (the )?(risk|plasma|exposure)|increase(s|d)? the risk of (bleeding|hemorrhage|toxicity)|bleeding risk|major)\b/i;
 const CONTRA_WORDS = /\bcontraindicat/i;
 
 function normalize(text: string): string {
@@ -46,11 +46,18 @@ function sentencesMentioning(text: string, term: string): string[] {
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
   const hits: string[] = [];
+  const seen = new Set<string>();
   for (const s of sentences) {
     const n = normalize(s);
     // whole-word-ish match to avoid "warfarin" matching "warfarin sodium" misses etc.
-    if (n.includes(t)) hits.push(s.length > 400 ? s.slice(0, 400) + "…" : s);
-    if (hits.length >= 5) break;
+    if (!n.includes(t)) continue;
+    const clipped = s.length > 400 ? s.slice(0, 400) + "…" : s;
+    // dedupe near-identical evidence (same text appears across many labels)
+    const key = n.slice(0, 160);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    hits.push(clipped);
+    if (hits.length >= 3) break;
   }
   return hits;
 }
