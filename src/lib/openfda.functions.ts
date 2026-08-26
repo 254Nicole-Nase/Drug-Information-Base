@@ -73,7 +73,7 @@ export const searchDrugLabels = createServerFn({ method: "GET" })
       `openfda.brand_name:"${term}"`,
       `openfda.generic_name:"${term}"`,
       `openfda.substance_name:"${term}"`,
-    ].join("+OR+");
+    ].join(" OR ");
 
     return queryOpenFda(search, 24);
   });
