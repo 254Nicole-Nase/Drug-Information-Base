@@ -157,7 +157,16 @@ export function parseLabelBlocks(
 
   // Labels often repeat the section name as the first words ("Warnings Allergy alert: ...").
   const first = blocks[0];
-  if (first && first.kind !== "bullets" && LEAD_WORDS.test(first.text.trim())) blocks.shift();
+  if (first && first.kind !== "bullets") {
+    const text = first.text.trim();
+    if (LEAD_WORDS.test(text)) {
+      blocks.shift();
+    } else {
+      const match = /^(\S+)\s+(\S[\s\S]*)$/.exec(text);
+      if (match && LEAD_WORDS.test(match[1]!)) first.text = match[2]!;
+    }
+  }
+
 
   return blocks;
 }
