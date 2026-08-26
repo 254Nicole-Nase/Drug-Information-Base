@@ -172,6 +172,13 @@ function SiteHeader() {
             Interactions
           </Link>
           <Link
+            to="/kenya"
+            className={linkClass}
+            activeProps={{ className: "bg-accent/70 text-accent-foreground" }}
+          >
+            Kenya
+          </Link>
+          <Link
             to="/evals"
             className={linkClass}
             activeProps={{ className: "bg-accent/70 text-accent-foreground" }}
