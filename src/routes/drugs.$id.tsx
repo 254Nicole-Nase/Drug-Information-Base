@@ -1,16 +1,29 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { AlertTriangle, ArrowLeft, ExternalLink } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ChevronDown, ExternalLink } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { Disclaimer } from "@/components/Disclaimer";
 import {
+  blockCount,
   dailyMedUrl,
   formatEffectiveTime,
   labelSections,
   labelSubtitle,
   labelTitle,
+  parseLabelBlocks,
 } from "@/lib/drug-label";
 import { getDrugLabel } from "@/lib/openfda.functions";
+
+const SAFETY_SECTIONS = new Set([
+  "boxed_warning",
+  "warnings",
+  "drug_interactions",
+  "contraindications",
+  "adverse_reactions",
+  "pregnancy",
+]);
+
 
 const labelQueryOptions = (id: string) => ({
   queryKey: ["openfda", "label", id],
@@ -105,18 +118,19 @@ function DrugDetail() {
 
       <div className="mt-8 space-y-6">
         {sections.map((section) => {
-          const tone =
-            section.key === "boxed_warning"
-              ? "border-destructive/40 bg-destructive/5"
-              : section.key === "drug_interactions" || section.key === "contraindications"
-                ? "border-warning/40 bg-warning/10"
-                : "border-border bg-card";
-          const rule =
-            section.key === "boxed_warning"
-              ? "border-destructive/50"
-              : section.key === "drug_interactions" || section.key === "contraindications"
-                ? "border-warning/60"
-                : "border-primary/40";
+          const isCritical = section.key === "boxed_warning";
+          const isCaution =
+            section.key === "drug_interactions" || section.key === "contraindications";
+          const tone = isCritical
+            ? "border-destructive/40 bg-destructive/5"
+            : isCaution
+              ? "border-warning/40 bg-warning/10"
+              : "border-border bg-card";
+          const rule = isCritical
+            ? "border-destructive/50"
+            : isCaution
+              ? "border-warning/60"
+              : "border-primary/40";
           return (
             <section
               key={section.key}
@@ -124,21 +138,17 @@ function DrugDetail() {
               className={`scroll-mt-24 rounded-2xl border p-5 shadow-soft ${tone}`}
             >
               <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-foreground">
-                {section.key === "boxed_warning" ? (
+                {isCritical ? (
                   <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
                 ) : null}
                 {section.title}
               </h2>
-              <div className={`mt-3 space-y-3 border-l-2 pl-4 ${rule}`}>
-                {section.paragraphs.map((paragraph, index) => (
-                  <p
-                    key={index}
-                    className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground"
-                  >
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
+              <SectionBody
+                paragraphs={section.paragraphs}
+                sentenceBullets={SAFETY_SECTIONS.has(section.key)}
+                rule={rule}
+                marker={isCritical ? "bg-destructive" : isCaution ? "bg-warning" : "bg-primary"}
+              />
             </section>
           );
         })}
@@ -149,6 +159,7 @@ function DrugDetail() {
           </p>
         ) : null}
       </div>
+
 
       <footer className="mt-10 rounded-2xl border border-border bg-accent/40 p-5 text-sm">
         <h2 className="font-display font-semibold text-foreground">Source</h2>
@@ -176,6 +187,85 @@ function DrugDetail() {
     </article>
   );
 }
+
+function SectionBody({
+  paragraphs,
+  sentenceBullets,
+  rule,
+  marker,
+}: {
+  paragraphs: string[];
+  sentenceBullets: boolean;
+  rule: string;
+  marker: string;
+}) {
+  const blocks = useMemo(
+    () => parseLabelBlocks(paragraphs, { sentenceBullets }),
+    [paragraphs, sentenceBullets],
+  );
+  const total = blockCount(blocks);
+  const collapsible = total > 10;
+  const [expanded, setExpanded] = useState(false);
+  const visible = collapsible && !expanded ? blocks.slice(0, 4) : blocks;
+
+  return (
+    <div>
+      <div className={`mt-3 space-y-3 border-l-2 pl-4 ${rule}`}>
+        {visible.map((block, index) => {
+          if (block.kind === "heading") {
+            return (
+              <h3
+                key={index}
+                className="pt-1 text-xs font-semibold uppercase tracking-widest text-foreground/70"
+              >
+                {block.text}
+              </h3>
+            );
+          }
+          if (block.kind === "bullets") {
+            return (
+              <ul key={index} className="space-y-2">
+                {block.items.map((item, itemIndex) => (
+                  <li
+                    key={itemIndex}
+                    className="flex gap-2.5 text-sm leading-relaxed text-muted-foreground"
+                  >
+                    <span
+                      className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${marker}`}
+                      aria-hidden="true"
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            );
+          }
+          return (
+            <p key={index} className="text-sm leading-relaxed text-muted-foreground">
+              {block.text}
+            </p>
+          );
+        })}
+      </div>
+
+      {collapsible ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+          aria-expanded={expanded}
+        >
+          {expanded ? "Show less" : `Show all ${total} points`}
+          <ChevronDown
+            className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          />
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 
 function Meta({ term, value }: { term: string; value: string | undefined }) {
   if (!value) return null;

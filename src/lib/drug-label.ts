@@ -46,6 +46,137 @@ export function labelSections(label: DrugLabel): LabelSection[] {
   });
 }
 
+export type LabelBlock =
+  | { kind: "heading"; text: string }
+  | { kind: "bullets"; items: string[] }
+  | { kind: "text"; text: string };
+
+const BULLET_PREFIX = /^[•▪·*\u2022\u25AA-]\s+/;
+
+const LEAD_WORDS =
+  /^(warnings?|uses?|purposes?|directions?|description|indications and usage|drug interactions|adverse reactions|contraindications)$/i;
+
+function isHeading(line: string): boolean {
+  if (line.length > 90) return false;
+  const letters = line.replace(/[^A-Za-z]/g, "");
+  if (letters.length >= 3 && letters === letters.toUpperCase()) return true;
+  return /:$/.test(line) && line.split(/\s+/).length <= 12;
+}
+
+function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.;])\s+(?=[A-Z(“"])/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+/** Standard OTC/SPL cue phrases that act as sub-headings inside run-on label prose. */
+const CUE_PHRASES = [
+  "Allergy alert",
+  "Stomach bleeding warning",
+  "Heart attack and stroke warning",
+  "Liver warning",
+  "Caffeine warning",
+  "Sore throat warning",
+  "Do not use",
+  "Ask a doctor before use if",
+  "Ask a doctor or pharmacist before use if",
+  "Ask a doctor",
+  "When using this product",
+  "Stop use and ask a doctor if",
+  "Stop use and ask a doctor",
+  "If pregnant or breast-feeding",
+  "Keep out of reach of children",
+  "Other information",
+  "In case of overdose",
+];
+
+const CUE_REGEX = new RegExp(`(${CUE_PHRASES.map((cue) => cue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\s*:?\\s*`, "g");
+
+type Chunk = { heading: string | null; body: string };
+
+function splitOnCues(line: string): Chunk[] {
+  const chunks: Chunk[] = [];
+  let lastIndex = 0;
+  let current: string | null = null;
+  CUE_REGEX.lastIndex = 0;
+
+  for (let match = CUE_REGEX.exec(line); match; match = CUE_REGEX.exec(line)) {
+    const body = line.slice(lastIndex, match.index).trim();
+    if (body || current) chunks.push({ heading: current, body });
+    current = match[1] ?? null;
+    lastIndex = CUE_REGEX.lastIndex;
+  }
+  const tail = line.slice(lastIndex).trim();
+  if (tail || current) chunks.push({ heading: current, body: tail });
+  return chunks.length > 0 ? chunks : [{ heading: null, body: line }];
+}
+
+/**
+ * Turns wall-of-text label prose into headings, bullet lists and short paragraphs.
+ * `sentenceBullets` splits long safety prose into scannable one-sentence points.
+ */
+export function parseLabelBlocks(
+  paragraphs: string[],
+  options: { sentenceBullets?: boolean } = {},
+): LabelBlock[] {
+  const blocks: LabelBlock[] = [];
+  const pushBullet = (item: string) => {
+    const last = blocks[blocks.length - 1];
+    if (last && last.kind === "bullets") last.items.push(item);
+    else blocks.push({ kind: "bullets", items: [item] });
+  };
+
+  for (const paragraph of paragraphs) {
+    for (const rawLine of paragraph.split(/\n+/)) {
+      const line = rawLine.trim();
+      if (!line) continue;
+
+      if (BULLET_PREFIX.test(line)) {
+        pushBullet(line.replace(BULLET_PREFIX, "").trim());
+        continue;
+      }
+      if (isHeading(line)) {
+        blocks.push({ kind: "heading", text: line.replace(/:$/, "") });
+        continue;
+      }
+
+      for (const chunk of splitOnCues(line)) {
+        if (chunk.heading) blocks.push({ kind: "heading", text: chunk.heading });
+        if (!chunk.body) continue;
+
+        const sentences = splitSentences(chunk.body);
+        if (options.sentenceBullets && sentences.length > 1 && chunk.body.length > 90) {
+          for (const sentence of sentences) pushBullet(sentence);
+        } else {
+          blocks.push({ kind: "text", text: chunk.body });
+        }
+      }
+    }
+  }
+
+  // Labels often repeat the section name as the first words ("Warnings Allergy alert: ...").
+  const first = blocks[0];
+  if (first && first.kind !== "bullets") {
+    const text = first.text.trim();
+    if (LEAD_WORDS.test(text)) {
+      blocks.shift();
+    } else {
+      const match = /^(\S+)\s+(\S[\s\S]*)$/.exec(text);
+      if (match && LEAD_WORDS.test(match[1]!)) first.text = match[2]!;
+    }
+  }
+
+
+  return blocks;
+}
+
+
+
+export function blockCount(blocks: LabelBlock[]): number {
+  return blocks.reduce((total, block) => total + (block.kind === "bullets" ? block.items.length : 1), 0);
+}
+
 /** openFDA effective_time is YYYYMMDD. */
 export function formatEffectiveTime(value: string | undefined): string | null {
   if (!value || value.length !== 8) return null;
