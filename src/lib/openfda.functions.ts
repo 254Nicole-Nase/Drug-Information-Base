@@ -49,7 +49,6 @@ async function queryOpenFda(search: string, limit: number): Promise<DrugLabel[]>
     headers: { Accept: "application/json" },
   });
 
-  console.log(`[openfda] ${response.status} ${url}`);
   if (response.status === 404) return [];
 
   if (!response.ok) {
