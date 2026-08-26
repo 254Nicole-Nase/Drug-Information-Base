@@ -156,8 +156,6 @@ export function parseLabelBlocks(
 }
 
 
-  return blocks;
-}
 
 export function blockCount(blocks: LabelBlock[]): number {
   return blocks.reduce((total, block) => total + (block.kind === "bullets" ? block.items.length : 1), 0);
