@@ -82,6 +82,25 @@ function DrugDetail() {
   const effective = formatEffectiveTime(label.effective_time);
   const sourceUrl = dailyMedUrl(label.set_id);
 
+  const getStatus = useServerFn(getLabelIngestionStatus);
+  const ingest = useServerFn(ingestDrugLabel);
+
+  const { data: status, refetch } = useQuery({
+    queryKey: ["corpus", "label", id],
+    queryFn: () => getStatus({ data: { id } }),
+  });
+
+  const ingestMutation = useMutation({
+    mutationFn: () => ingest({ data: { id } }),
+    onSuccess: (data) => {
+      toast.success(`Added ${data.chunksCount} chunks to the corpus`);
+      void refetch();
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Ingestion failed");
+    },
+  });
+
   return (
     <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <Link
@@ -93,13 +112,35 @@ function DrugDetail() {
 
       <header className="mt-6 overflow-hidden rounded-3xl border border-border shadow-soft">
         <div className="bg-gradient-hero px-6 py-8">
-          <h1 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl">
-            {labelTitle(label)}
-          </h1>
-          {labelSubtitle(label) ? (
-            <p className="mt-1 text-lg text-primary-foreground/75">{labelSubtitle(label)}</p>
-          ) : null}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl">
+                {labelTitle(label)}
+              </h1>
+              {labelSubtitle(label) ? (
+                <p className="mt-1 text-lg text-primary-foreground/75">{labelSubtitle(label)}</p>
+              ) : null}
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled={ingestMutation.isPending}
+              onClick={() => ingestMutation.mutate()}
+              className="shrink-0 gap-1.5 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
+            >
+              {ingestMutation.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : status?.ingested ? (
+                <Database className="h-3.5 w-3.5" />
+              ) : (
+                <Plus className="h-3.5 w-3.5" />
+              )}
+              {status?.ingested ? `In corpus (${status.chunksCount})` : "Add to corpus"}
+            </Button>
+          </div>
         </div>
+
         <dl className="grid gap-4 bg-gradient-surface p-6 text-sm sm:grid-cols-2">
           <Meta term="Labeler" value={label.openfda?.manufacturer_name?.[0]} />
           <Meta term="Route" value={label.openfda?.route?.join(", ")} />
