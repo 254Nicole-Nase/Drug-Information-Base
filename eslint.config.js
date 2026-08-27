@@ -7,13 +7,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: [
-      "dist",
-      ".output",
-      ".vinxi",
-      "src/routeTree.gen.ts",
-      "src/integrations/supabase/**",
-    ],
+    ignores: ["dist", ".output", ".vinxi", "src/routeTree.gen.ts", "src/integrations/supabase/**"],
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

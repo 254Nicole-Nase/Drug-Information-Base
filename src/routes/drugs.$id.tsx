@@ -102,7 +102,6 @@ function DrugDetail() {
   const effective = formatEffectiveTime(label.effective_time);
   const sourceUrl = dailyMedUrl(label.set_id);
 
-
   return (
     <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <Link
