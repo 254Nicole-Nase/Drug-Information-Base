@@ -145,25 +145,44 @@ export async function generateAnswer(
     headers["Authorization"] = `Bearer ${apiKey}`;
   }
 
+  const body: Record<string, unknown> = {
+    model: mappedModel,
+    temperature: 0.2,
+    // Gemini 2.5 spends part of this budget on hidden thinking tokens, so the
+    // cap has to be generous or the visible answer gets cut mid-sentence.
+    max_tokens: 3000,
+    messages: [{ role: "system", content: system }, ...messages],
+  };
+  if (provider === "google") {
+    // Turn thinking off entirely: the whole budget then goes to the answer.
+    body["reasoning_effort"] = "none";
+  }
+
   const response = await fetchWithRetry(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers,
-    body: JSON.stringify({
-      model: mappedModel,
-      temperature: 0.2,
-      max_tokens: 900,
-      messages: [{ role: "system", content: system }, ...messages],
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    const body = await response.text();
-    console.error(`Chat completion failed [${response.status}]: ${body}`);
-    throw new Error(describeFailure("Answer", response.status, body));
+    const text = await response.text();
+    console.error(`Chat completion failed [${response.status}]: ${text}`);
+    throw new Error(describeFailure("Answer", response.status, text));
   }
 
   const json = (await response.json()) as {
     choices: Array<{ message: { content: string | null }; finish_reason?: string }>;
   };
-  return json.choices[0]?.message?.content?.trim() ?? "";
+  const choice = json.choices[0];
+  const content = choice?.message?.content?.trim() ?? "";
+  if (!content) {
+    throw new Error(
+      `The model returned an empty answer (finish reason: ${choice?.finish_reason ?? "unknown"}). Please try again.`,
+    );
+  }
+  if (choice?.finish_reason === "length") {
+    console.warn("Answer truncated by token limit");
+  }
+  return content;
 }
+
