@@ -199,15 +199,15 @@ export async function seedNextDrugs(supabaseAdmin: SupabaseClient<Database>, lim
     .select("generic_name, substance_name, brand_name");
   if (error) throw error;
 
-  const have = new Set(
-    (existing ?? []).flatMap((row) =>
-      [row.generic_name, row.substance_name, row.brand_name]
-        .filter(Boolean)
-        .map((value) => (value as string).toLowerCase()),
-    ),
+  // Labels store salt/brand variants ("METFORMIN HYDROCHLORIDE"), so match by
+  // substring rather than equality or the same drug is ingested repeatedly.
+  const have = (existing ?? []).flatMap((row) =>
+    [row.generic_name, row.substance_name, row.brand_name]
+      .filter(Boolean)
+      .map((value) => (value as string).toLowerCase()),
   );
 
-  const pending = SEED_DRUGS.filter((drug) => !have.has(drug));
+  const pending = SEED_DRUGS.filter((drug) => !have.some((name) => name.includes(drug)));
   const batch = pending.slice(0, limit);
 
   const ingested: Array<{ drug: string; labelId: string; chunksCount: number }> = [];
