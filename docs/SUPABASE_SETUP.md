@@ -2,16 +2,16 @@
 
 Today the app runs on a managed Postgres project (Postgres 15 + `pgvector` +
 PostgREST + RLS) provisioned inside Lovable. This guide moves the whole thing —
-schema **and data** — into a Supabase project in *your* account, so the repo is
+schema **and data** — into a Supabase project in _your_ account, so the repo is
 one a recruiter can clone, point at your project, and run.
 
 Everything you need is in the repo:
 
-| File | Purpose |
-| --- | --- |
-| `supabase/schema.sql` | Tables, indexes, RLS policies, retrieval functions |
-| `supabase/seed.sql` | Every row currently in the corpus, including embeddings |
-| `scripts/export-corpus.ts` | Regenerates `seed.sql` from any live project |
+| File                       | Purpose                                                 |
+| -------------------------- | ------------------------------------------------------- |
+| `supabase/schema.sql`      | Tables, indexes, RLS policies, retrieval functions      |
+| `supabase/seed.sql`        | Every row currently in the corpus, including embeddings |
+| `scripts/export-corpus.ts` | Regenerates `seed.sql` from any live project            |
 
 ## 1. Create the project
 
@@ -23,13 +23,13 @@ Everything you need is in the repo:
 
 SQL Editor → paste `supabase/schema.sql` → Run. It creates:
 
-| Object | Purpose |
-| --- | --- |
-| `drug_labels` | One row per FDA Structured Product Label, plus raw `label_json` |
-| `label_chunks` | Sentence-bounded passages with a `vector(1536)` embedding and a generated `tsvector` |
-| `ke_products` | Curated Kenyan (PPB) product register sample |
-| `match_chunks_vector` | Pure dense retrieval (cosine similarity) |
-| `match_chunks_hybrid` | Dense + keyword retrieval fused with reciprocal-rank fusion |
+| Object                | Purpose                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `drug_labels`         | One row per FDA Structured Product Label, plus raw `label_json`                      |
+| `label_chunks`        | Sentence-bounded passages with a `vector(1536)` embedding and a generated `tsvector` |
+| `ke_products`         | Curated Kenyan (PPB) product register sample                                         |
+| `match_chunks_vector` | Pure dense retrieval (cosine similarity)                                             |
+| `match_chunks_hybrid` | Dense + keyword retrieval fused with reciprocal-rank fusion                          |
 
 RLS is enabled on every table with anonymous **read-only** policies — the corpus
 is public reference data. All writes happen server-side with the service-role key.
@@ -52,14 +52,14 @@ the project.
 
 ## 4. Environment variables
 
-| Variable | Where it is used | Value |
-| --- | --- | --- |
-| `VITE_SUPABASE_URL` | browser | Project URL |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | browser | Publishable / anon key |
-| `SUPABASE_URL` | server functions | same project URL |
-| `SUPABASE_PUBLISHABLE_KEY` | server functions (public reads) | same publishable key |
-| `SUPABASE_SERVICE_ROLE_KEY` | server functions (ingestion only) | Service role key — **never** expose to the browser |
-| `LOVABLE_API_KEY` | server functions | AI gateway key for embeddings + answer synthesis |
+| Variable                        | Where it is used                  | Value                                              |
+| ------------------------------- | --------------------------------- | -------------------------------------------------- |
+| `VITE_SUPABASE_URL`             | browser                           | Project URL                                        |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | browser                           | Publishable / anon key                             |
+| `SUPABASE_URL`                  | server functions                  | same project URL                                   |
+| `SUPABASE_PUBLISHABLE_KEY`      | server functions (public reads)   | same publishable key                               |
+| `SUPABASE_SERVICE_ROLE_KEY`     | server functions (ingestion only) | Service role key — **never** expose to the browser |
+| `LOVABLE_API_KEY`               | server functions                  | AI gateway key for embeddings + answer synthesis   |
 
 Settings → API has the first five. Put them in `.env` locally and in your host's
 environment panel in production. `.env.example` lists the same set.

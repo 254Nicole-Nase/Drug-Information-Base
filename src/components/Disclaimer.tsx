@@ -9,10 +9,9 @@ export function Disclaimer({ className = "" }: { className?: string }) {
         <ShieldAlert className="h-4 w-4" aria-hidden="true" />
       </span>
       <p className="leading-relaxed">
-        <span className="font-semibold text-foreground">Educational use only.</span> This
-        tool reproduces published regulatory drug labelling. It is not medical advice, not a
-        diagnosis, and not a dosing recommendation. Always consult a licensed pharmacist or
-        clinician.
+        <span className="font-semibold text-foreground">Educational use only.</span> This tool
+        reproduces published regulatory drug labelling. It is not medical advice, not a diagnosis,
+        and not a dosing recommendation. Always consult a licensed pharmacist or clinician.
       </p>
     </div>
   );

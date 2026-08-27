@@ -18,8 +18,7 @@ export const Route = createFileRoute("/interactions")({
       { property: "og:title", content: "Drug Interaction Checker" },
       {
         property: "og:description",
-        content:
-          "Pairwise interaction detection grounded in FDA structured product labels.",
+        content: "Pairwise interaction detection grounded in FDA structured product labels.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -57,8 +56,7 @@ function InteractionsPage() {
     mutationFn: (list: string[]) => checkDrugInteractions({ data: { drugs: list } }),
   });
 
-  const setDrug = (i: number, v: string) =>
-    setDrugs((d) => d.map((x, idx) => (idx === i ? v : x)));
+  const setDrug = (i: number, v: string) => setDrugs((d) => d.map((x, idx) => (idx === i ? v : x)));
   const addDrug = () => setDrugs((d) => (d.length < 10 ? [...d, ""] : d));
   const removeDrug = (i: number) =>
     setDrugs((d) => (d.length > 2 ? d.filter((_, idx) => idx !== i) : d));
@@ -141,8 +139,7 @@ function InteractionsPage() {
                 }`}
               >
                 {d.input}
-                {d.normalized !== d.input.toLowerCase() &&
-                  ` → ${d.normalized}`}
+                {d.normalized !== d.input.toLowerCase() && ` → ${d.normalized}`}
                 {!d.found && " (no label found)"}
               </span>
             ))}
@@ -162,10 +159,7 @@ function InteractionsPage() {
             result.findings.map((f, i) => {
               const sev = SEVERITY_STYLES[f.severityHint];
               return (
-                <div
-                  key={i}
-                  className="rounded-2xl border border-border bg-card p-6 shadow-soft"
-                >
+                <div key={i} className="rounded-2xl border border-border bg-card p-6 shadow-soft">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="font-display text-lg font-semibold">
                       {f.drugA} × {f.drugB}

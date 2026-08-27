@@ -72,9 +72,7 @@ function classify(evidence: string[]): InteractionFinding["severityHint"] {
 
 async function rxnavNormalize(name: string): Promise<string> {
   try {
-    const res = await fetch(
-      `${RXNAV_BASE}/rxcui.json?name=${encodeURIComponent(name)}&search=2`,
-    );
+    const res = await fetch(`${RXNAV_BASE}/rxcui.json?name=${encodeURIComponent(name)}&search=2`);
     if (!res.ok) return name.toLowerCase();
     const json = (await res.json()) as {
       approxGroup?: { candidate?: { rxcui: string }[] };
@@ -88,8 +86,7 @@ async function rxnavNormalize(name: string): Promise<string> {
     const propJson = (await propRes.json()) as {
       propertyConceptGroup?: { propertyConcept?: { propValue: string }[] };
     };
-    const rxname =
-      propJson.propertyConceptGroup?.propertyConcept?.[0]?.propValue;
+    const rxname = propJson.propertyConceptGroup?.propertyConcept?.[0]?.propValue;
     if (!rxname) return name.toLowerCase();
     // Use the base ingredient part, lowercased
     return rxname.split(/[\s/]/)[0]!.toLowerCase();
@@ -104,20 +101,17 @@ interface LabelInfo {
   interactionsText: string;
 }
 
-async function fetchInteractionsSection(
-  name: string,
-): Promise<LabelInfo | null> {
-  const q = `openfda.generic_name:"${encodeURIComponent(name)}"+openfda.brand_name:"${encodeURIComponent(name)}"`.replace(
-    "+",
-    "%20OR%20",
-  );
+async function fetchInteractionsSection(name: string): Promise<LabelInfo | null> {
+  const q =
+    `openfda.generic_name:"${encodeURIComponent(name)}"+openfda.brand_name:"${encodeURIComponent(name)}"`.replace(
+      "+",
+      "%20OR%20",
+    );
   const url = `${OPENFDA_BASE}?search=${q}&limit=5`;
   let res = await fetch(url);
   if (!res.ok) {
     // fallback: loose search
-    res = await fetch(
-      `${OPENFDA_BASE}?search=${encodeURIComponent(name)}&limit=5`,
-    );
+    res = await fetch(`${OPENFDA_BASE}?search=${encodeURIComponent(name)}&limit=5`);
     if (!res.ok) return null;
   }
   const json = (await res.json()) as {
@@ -135,15 +129,11 @@ async function fetchInteractionsSection(
   return {
     id: best.id ?? "unknown",
     brand: best.openfda?.brand_name?.[0],
-    interactionsText: withInteractions
-      .flatMap((r) => r.drug_interactions ?? [])
-      .join("\n"),
+    interactionsText: withInteractions.flatMap((r) => r.drug_interactions ?? []).join("\n"),
   };
 }
 
-export async function checkInteractions(
-  drugNames: string[],
-): Promise<InteractionCheckResult> {
+export async function checkInteractions(drugNames: string[]): Promise<InteractionCheckResult> {
   const unique = [...new Set(drugNames.map((d) => d.trim()).filter(Boolean))];
   if (unique.length < 2) {
     throw new Error("Provide at least two drugs to check.");
@@ -174,12 +164,8 @@ export async function checkInteractions(
       checkedPairs++;
       const a = labels[i]!;
       const b = labels[j]!;
-      const evA = a.label
-        ? sentencesMentioning(a.label.interactionsText, b.normalized)
-        : [];
-      const evB = b.label
-        ? sentencesMentioning(b.label.interactionsText, a.normalized)
-        : [];
+      const evA = a.label ? sentencesMentioning(a.label.interactionsText, b.normalized) : [];
+      const evB = b.label ? sentencesMentioning(b.label.interactionsText, a.normalized) : [];
       // also try the raw input term when normalization changed nothing useful
       if (evA.length === 0 && a.label && b.input.toLowerCase() !== b.normalized) {
         evA.push(...sentencesMentioning(a.label.interactionsText, b.input));

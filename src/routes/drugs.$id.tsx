@@ -27,7 +27,6 @@ import {
 import { getDrugLabel } from "@/lib/openfda.functions";
 import { getLabelIngestionStatus, ingestDrugLabel } from "@/lib/rag.functions";
 
-
 const SAFETY_SECTIONS = new Set([
   "boxed_warning",
   "warnings",
@@ -36,7 +35,6 @@ const SAFETY_SECTIONS = new Set([
   "adverse_reactions",
   "pregnancy",
 ]);
-
 
 const labelQueryOptions = (id: string) => ({
   queryKey: ["openfda", "label", id],
@@ -53,7 +51,10 @@ export const Route = createFileRoute("/drugs/$id")({
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Label unavailable — Drug Info Center" }, { name: "robots", content: "noindex" }],
+        meta: [
+          { title: "Label unavailable — Drug Info Center" },
+          { name: "robots", content: "noindex" },
+        ],
       };
     }
     const title = `${loaderData.title} — label reference`;
@@ -76,12 +77,6 @@ function DrugDetail() {
   const { id } = Route.useParams();
   const { data: label } = useSuspenseQuery(labelQueryOptions(id));
 
-  if (!label) return null;
-
-  const sections = labelSections(label);
-  const effective = formatEffectiveTime(label.effective_time);
-  const sourceUrl = dailyMedUrl(label.set_id);
-
   const getStatus = useServerFn(getLabelIngestionStatus);
   const ingest = useServerFn(ingestDrugLabel);
 
@@ -100,6 +95,12 @@ function DrugDetail() {
       toast.error(error instanceof Error ? error.message : "Ingestion failed");
     },
   });
+
+  if (!label) return null;
+
+  const sections = labelSections(label);
+  const effective = formatEffectiveTime(label.effective_time);
+  const sourceUrl = dailyMedUrl(label.set_id);
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
@@ -130,7 +131,6 @@ function DrugDetail() {
               onClick={() => ingestMutation.mutate()}
               className="shrink-0 gap-1.5 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
             >
-
               {ingestMutation.isPending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : status?.ingested ? (
@@ -215,7 +215,6 @@ function DrugDetail() {
           </p>
         ) : null}
       </div>
-
 
       <footer className="mt-10 rounded-2xl border border-border bg-accent/40 p-5 text-sm">
         <h2 className="font-display font-semibold text-foreground">Source</h2>
@@ -322,7 +321,6 @@ function SectionBody({
   );
 }
 
-
 function Meta({ term, value }: { term: string; value: string | undefined }) {
   if (!value) return null;
   return (
@@ -332,4 +330,3 @@ function Meta({ term, value }: { term: string; value: string | undefined }) {
     </div>
   );
 }
-

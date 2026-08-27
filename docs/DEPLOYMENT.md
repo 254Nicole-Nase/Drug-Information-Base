@@ -5,14 +5,14 @@ pick a preset, set the environment variables, deploy.
 
 ## Environment variables
 
-| Variable | Scope | Notes |
-| --- | --- | --- |
-| `VITE_SUPABASE_URL` | build + browser | Supabase project URL |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | build + browser | Publishable (anon) key |
-| `SUPABASE_URL` | server | Same project URL |
-| `SUPABASE_PUBLISHABLE_KEY` | server | Same publishable key (public reads) |
-| `SUPABASE_SERVICE_ROLE_KEY` | server, secret | Ingestion / "Add to corpus" only |
-| `LOVABLE_API_KEY` | server, secret | Embeddings + answer synthesis |
+| Variable                        | Scope           | Notes                               |
+| ------------------------------- | --------------- | ----------------------------------- |
+| `VITE_SUPABASE_URL`             | build + browser | Supabase project URL                |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | build + browser | Publishable (anon) key              |
+| `SUPABASE_URL`                  | server          | Same project URL                    |
+| `SUPABASE_PUBLISHABLE_KEY`      | server          | Same publishable key (public reads) |
+| `SUPABASE_SERVICE_ROLE_KEY`     | server, secret  | Ingestion / "Add to corpus" only    |
+| `LOVABLE_API_KEY`               | server, secret  | Embeddings + answer synthesis       |
 
 The `VITE_*` pair is inlined at build time, so it must be present during the
 build, not only at runtime. Never expose the service role key to the browser.

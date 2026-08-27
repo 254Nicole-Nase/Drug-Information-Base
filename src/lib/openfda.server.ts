@@ -42,10 +42,7 @@ const responseSchema = z.object({
 });
 
 /** openFDA answers "no matches" with HTTP 404 + a NOT_FOUND envelope. */
-export async function queryOpenFda(
-  search: string,
-  limit: number,
-): Promise<DrugLabelRecord[]> {
+export async function queryOpenFda(search: string, limit: number): Promise<DrugLabelRecord[]> {
   const url = `${OPENFDA_BASE}?search=${encodeURIComponent(search)}&limit=${limit}`;
   const response = await fetch(url, { headers: { Accept: "application/json" } });
 

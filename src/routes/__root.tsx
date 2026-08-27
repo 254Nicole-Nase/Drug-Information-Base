@@ -11,8 +11,6 @@ import { Pill } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
-
-
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -112,7 +110,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
-
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -192,9 +189,7 @@ function SiteHeader() {
           >
             About
           </Link>
-
         </div>
-
       </nav>
     </header>
   );
@@ -205,15 +200,14 @@ function SiteFooter() {
     <footer className="mt-20 border-t border-border bg-gradient-surface">
       <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:px-6">
         <p>
-          Data from the openFDA drug label API (public domain). Educational use only — not
-          medical advice.
+          Data from the openFDA drug label API (public domain). Educational use only — not medical
+          advice.
         </p>
         <p className="sm:ml-auto">Built by Nicole Nase · Nairobi, Kenya</p>
       </div>
     </footer>
   );
 }
-
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -232,5 +226,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-
-

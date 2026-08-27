@@ -51,7 +51,6 @@ export async function generateAnswer(
     }),
   });
 
-
   if (!response.ok) {
     const body = await response.text();
     console.error(`Chat completion failed [${response.status}]: ${body}`);
@@ -63,4 +62,3 @@ export async function generateAnswer(
   };
   return json.choices[0]?.message?.content?.trim() ?? "";
 }
-

@@ -91,7 +91,10 @@ const CUE_PHRASES = [
   "In case of overdose",
 ];
 
-const CUE_REGEX = new RegExp(`(${CUE_PHRASES.map((cue) => cue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\s*:?\\s*`, "g");
+const CUE_REGEX = new RegExp(
+  `(${CUE_PHRASES.map((cue) => cue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\s*:?\\s*`,
+  "g",
+);
 
 type Chunk = { heading: string | null; body: string };
 
@@ -167,14 +170,14 @@ export function parseLabelBlocks(
     }
   }
 
-
   return blocks;
 }
 
-
-
 export function blockCount(blocks: LabelBlock[]): number {
-  return blocks.reduce((total, block) => total + (block.kind === "bullets" ? block.items.length : 1), 0);
+  return blocks.reduce(
+    (total, block) => total + (block.kind === "bullets" ? block.items.length : 1),
+    0,
+  );
 }
 
 /** openFDA effective_time is YYYYMMDD. */

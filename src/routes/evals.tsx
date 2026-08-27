@@ -50,7 +50,8 @@ function Metric({ label, value, hint }: { label: string; value: string; hint?: s
 }
 
 function StatusIcon({ status }: { status: "pass" | "fail" | "skipped" }) {
-  if (status === "pass") return <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" />;
+  if (status === "pass")
+    return <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" />;
   if (status === "fail") return <XCircle className="h-4 w-4 text-destructive" aria-hidden="true" />;
   return <MinusCircle className="h-4 w-4 text-muted-foreground" aria-hidden="true" />;
 }
@@ -60,8 +61,7 @@ function Evals() {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: (kind?: "grounded" | "refusal") =>
-      run({ data: kind ? { kind } : {} }),
+    mutationFn: (kind?: "grounded" | "refusal") => run({ data: kind ? { kind } : {} }),
   });
 
   const groundedCount = EVAL_SET.filter((c) => c.kind === "grounded").length;
@@ -79,7 +79,8 @@ function Evals() {
               Evaluation suite
             </h1>
             <p className="text-sm text-muted-foreground">
-              {groundedCount} grounded cases · {refusalCount} adversarial cases the system must refuse
+              {groundedCount} grounded cases · {refusalCount} adversarial cases the system must
+              refuse
             </p>
           </div>
         </div>
@@ -140,8 +141,16 @@ function Evals() {
               value={pct(mutation.data.totals.passRate)}
               hint={`${mutation.data.totals.passed}/${mutation.data.totals.evaluated} evaluated`}
             />
-            <Metric label="Faithfulness" value={pct(mutation.data.totals.meanFaithfulness)} hint="mean, judge-scored" />
-            <Metric label="Answer relevance" value={pct(mutation.data.totals.meanRelevance)} hint="mean, judge-scored" />
+            <Metric
+              label="Faithfulness"
+              value={pct(mutation.data.totals.meanFaithfulness)}
+              hint="mean, judge-scored"
+            />
+            <Metric
+              label="Answer relevance"
+              value={pct(mutation.data.totals.meanRelevance)}
+              hint="mean, judge-scored"
+            />
             <Metric
               label="Context precision"
               value={pct(mutation.data.totals.meanContextPrecision)}
@@ -155,13 +164,16 @@ function Evals() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Run {new Date(mutation.data.ranAt).toLocaleString()} · judge model {mutation.data.model} ·{" "}
-            {mutation.data.totals.skipped} skipped (drug not in corpus)
+            Run {new Date(mutation.data.ranAt).toLocaleString()} · judge model {mutation.data.model}{" "}
+            · {mutation.data.totals.skipped} skipped (drug not in corpus)
           </p>
 
           <ul className="space-y-3">
             {mutation.data.results.map((result) => (
-              <li key={result.id} className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+              <li
+                key={result.id}
+                className="rounded-2xl border border-border bg-card p-4 shadow-soft"
+              >
                 <button
                   type="button"
                   className="flex w-full items-start gap-3 text-left"
@@ -171,14 +183,19 @@ function Evals() {
                     <StatusIcon status={result.status} />
                   </span>
                   <span className="flex-1">
-                    <span className="block text-sm font-medium text-foreground">{result.question}</span>
+                    <span className="block text-sm font-medium text-foreground">
+                      {result.question}
+                    </span>
                     <span className="mt-1 block text-xs text-muted-foreground">
-                      {result.kind === "refusal" ? "safety" : "grounded"} · {result.retrieved} passages ·
-                      faithfulness {pct(result.faithfulness)} · relevance {pct(result.answerRelevance)} ·
-                      context precision {pct(result.contextPrecision)}
+                      {result.kind === "refusal" ? "safety" : "grounded"} · {result.retrieved}{" "}
+                      passages · faithfulness {pct(result.faithfulness)} · relevance{" "}
+                      {pct(result.answerRelevance)} · context precision{" "}
+                      {pct(result.contextPrecision)}
                     </span>
                     {result.reason ? (
-                      <span className="mt-1 block text-xs italic text-muted-foreground">{result.reason}</span>
+                      <span className="mt-1 block text-xs italic text-muted-foreground">
+                        {result.reason}
+                      </span>
                     ) : null}
                   </span>
                 </button>

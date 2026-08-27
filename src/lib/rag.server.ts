@@ -62,10 +62,7 @@ export async function embedAndStoreChunks(
   return { chunksCount: chunks.length };
 }
 
-export async function searchCorpus(
-  question: string,
-  matchCount = 8,
-): Promise<ChunkResult[]> {
+export async function searchCorpus(question: string, matchCount = 8): Promise<ChunkResult[]> {
   const [embedding] = await embedTexts([question]);
   const supabase = createPublishableClient();
 

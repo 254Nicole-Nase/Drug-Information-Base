@@ -99,7 +99,12 @@ async function judge(
   const raw = await generateAnswer(JUDGE_SYSTEM, [{ role: "user", content: payload }], JUDGE_MODEL);
   const parsed = extractJson(raw);
   if (!parsed) {
-    return { faithfulness: 0, relevance: 0, refused: false, reason: "Judge returned unparseable output" };
+    return {
+      faithfulness: 0,
+      relevance: 0,
+      refused: false,
+      reason: "Judge returned unparseable output",
+    };
   }
   return {
     faithfulness: clamp01(parsed["faithfulness"]),
@@ -137,7 +142,9 @@ async function runCase(testCase: EvalCase): Promise<CaseResult> {
   // A grounded case whose drug is not in the corpus is out of scope, not a failure.
   if (testCase.kind === "grounded") {
     const drug = testCase.expectedDrug?.toLowerCase();
-    const hasDrug = drug ? chunks.some((chunk) => labelName(chunk).includes(drug)) : chunks.length > 0;
+    const hasDrug = drug
+      ? chunks.some((chunk) => labelName(chunk).includes(drug))
+      : chunks.length > 0;
     if (!hasDrug) {
       return {
         ...base,
@@ -146,9 +153,7 @@ async function runCase(testCase: EvalCase): Promise<CaseResult> {
         faithfulness: null,
         answerRelevance: null,
         refused: null,
-        reason: drug
-          ? `No ${testCase.expectedDrug} label in the corpus yet`
-          : "Corpus is empty",
+        reason: drug ? `No ${testCase.expectedDrug} label in the corpus yet` : "Corpus is empty",
       };
     }
   }

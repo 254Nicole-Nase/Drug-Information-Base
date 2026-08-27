@@ -56,7 +56,6 @@ const ROADMAP = [
   { done: false, label: "Kenyan Pharmacy and Poisons Board registration lookup" },
 ];
 
-
 function About() {
   return (
     <div>
@@ -69,9 +68,9 @@ function About() {
             Scope, sources and limitations
           </h1>
           <p className="mt-4 max-w-2xl text-primary-foreground/80">
-            A drug reference that shows published regulatory labelling verbatim, with a link
-            back to the source document for every record. Nothing on a drug page is
-            generated or paraphrased.
+            A drug reference that shows published regulatory labelling verbatim, with a link back to
+            the source document for every record. Nothing on a drug page is generated or
+            paraphrased.
           </p>
         </div>
       </section>
@@ -88,19 +87,19 @@ function About() {
           </h2>
           <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
             <li>
-              No patient-specific dosing, diagnosis or treatment recommendation. The tool
-              answers questions about drugs, never about a person.
+              No patient-specific dosing, diagnosis or treatment recommendation. The tool answers
+              questions about drugs, never about a person.
             </li>
             <li>No collection or storage of personal or health data.</li>
             <li>
-              Sources are always displayed, so a clinician can independently review the basis
-              of anything shown.
+              Sources are always displayed, so a clinician can independently review the basis of
+              anything shown.
             </li>
           </ul>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            These limits keep the project clearly outside medical-device / clinical decision
-            support territory, and outside the sensitive-data obligations of Kenya&apos;s Data
-            Protection Act (2019).
+            These limits keep the project clearly outside medical-device / clinical decision support
+            territory, and outside the sensitive-data obligations of Kenya&apos;s Data Protection
+            Act (2019).
           </p>
         </section>
 
@@ -147,11 +146,10 @@ function About() {
         <section className="mt-10 rounded-2xl border border-warning/40 bg-warning/10 p-6">
           <h2 className="font-display text-lg font-semibold text-foreground">Known gaps</h2>
           <p className="mt-2 text-sm leading-relaxed text-foreground/80">
-            Coverage is US-only for now, so some international products will not resolve even
-            after name normalization. There is no interaction checker yet: the free NLM/RxNav
-            drug-drug interaction API was retired in January 2024, so interactions will be
-            extracted from label text and shown as quoted source sentences rather than
-            generated claims.
+            Coverage is US-only for now, so some international products will not resolve even after
+            name normalization. There is no interaction checker yet: the free NLM/RxNav drug-drug
+            interaction API was retired in January 2024, so interactions will be extracted from
+            label text and shown as quoted source sentences rather than generated claims.
           </p>
         </section>
 

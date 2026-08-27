@@ -17,7 +17,8 @@ import { Input } from "@/components/ui/input";
 import { askQuestion, getCorpusStatus, searchCorpusFn } from "@/lib/rag.functions";
 
 const TITLE = "Ask the corpus — Drug Info Center";
-const DESCRIPTION = "Ask a plain-language question and get an answer grounded in the FDA label corpus, with citations back to the source documents.";
+const DESCRIPTION =
+  "Ask a plain-language question and get an answer grounded in the FDA label corpus, with citations back to the source documents.";
 
 export const Route = createFileRoute("/ask")({
   head: () => ({
@@ -89,7 +90,8 @@ function Ask() {
         {corpus ? (
           <p className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-foreground">
             <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-            {corpus.labelsCount} label{corpus.labelsCount === 1 ? "" : "s"} · {corpus.chunksCount} chunk
+            {corpus.labelsCount} label{corpus.labelsCount === 1 ? "" : "s"} · {corpus.chunksCount}{" "}
+            chunk
             {corpus.chunksCount === 1 ? "" : "s"} indexed
           </p>
         ) : null}
@@ -143,7 +145,9 @@ function Ask() {
       {answerMutation.isPending ? (
         <div className="mt-6 rounded-2xl border border-border bg-card p-8 text-center shadow-soft">
           <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-          <p className="mt-3 text-sm text-muted-foreground">Searching the corpus and synthesizing an answer…</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Searching the corpus and synthesizing an answer…
+          </p>
         </div>
       ) : null}
 
@@ -151,13 +155,14 @@ function Ask() {
         <div className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive shadow-soft">
           <p className="font-medium">Answer failed</p>
           <p className="mt-1">
-            {answerMutation.error instanceof Error ? answerMutation.error.message : "Something went wrong"}
+            {answerMutation.error instanceof Error
+              ? answerMutation.error.message
+              : "Something went wrong"}
           </p>
         </div>
       ) : null}
 
       {answerMutation.data ? (
-
         <div className="mt-6 space-y-6">
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="font-display font-semibold text-card-foreground">Answer</h2>
@@ -177,7 +182,8 @@ function Ask() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-xs font-medium text-primary">
-                        [{index + 1}] {chunk.label?.brand_name ?? chunk.label?.generic_name ?? "Unknown product"}
+                        [{index + 1}]{" "}
+                        {chunk.label?.brand_name ?? chunk.label?.generic_name ?? "Unknown product"}
                       </span>
                       <Link
                         to="/drugs/$id"
@@ -201,18 +207,26 @@ function Ask() {
         </div>
       ) : null}
 
-      {!answerMutation.isPending && !answerMutation.data && searchMutation.data && searchMutation.data.length > 0 ? (
+      {!answerMutation.isPending &&
+      !answerMutation.data &&
+      searchMutation.data &&
+      searchMutation.data.length > 0 ? (
         <section className="mt-6">
           <h2 className="font-display font-semibold text-card-foreground">Top matching passages</h2>
           <ul className="mt-3 space-y-3">
             {searchMutation.data.slice(0, 5).map((chunk) => (
-              <li key={chunk.chunk_id} className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+              <li
+                key={chunk.chunk_id}
+                className="rounded-2xl border border-border bg-card p-4 shadow-soft"
+              >
                 <div className="flex items-center gap-2 text-xs font-medium text-primary">
                   {chunk.label?.brand_name ?? chunk.label?.generic_name ?? "Unknown product"}
                   <ArrowRight className="h-3 w-3" />
                   {chunk.section_title}
                 </div>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{chunk.content}</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  {chunk.content}
+                </p>
               </li>
             ))}
           </ul>
