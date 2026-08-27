@@ -185,6 +185,59 @@ export async function searchCorpus(question: string, matchCount = 8): Promise<Ch
   return results;
 }
 
+export type AutoIngestResult = {
+  attempted: boolean;
+  term: string | null;
+  ingestedLabelId: string | null;
+  chunksCount: number;
+  error: string | null;
+};
+
+/**
+ * Tries to find an openFDA label for a drug mentioned in the question and
+ * ingest it on the fly. Returns metadata so the UI can report what happened.
+ */
+export async function autoIngestMissingDrug(
+  question: string,
+): Promise<AutoIngestResult> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const drugTerms = await resolveDrugTerms(question);
+  if (drugTerms.length === 0) {
+    return { attempted: false, term: null, ingestedLabelId: null, chunksCount: 0, error: null };
+  }
+
+  // Prefer the canonical (normalized) term if present; otherwise the first term.
+  const resolved = drugTerms.find((t) => !question.toLowerCase().includes(t.toLowerCase())) ?? drugTerms[0];
+
+  try {
+    const { labels } = await searchLabelsWithNormalization(resolved);
+    const best = labels.find((label) => (label.warnings?.length ?? 0) > 0) ?? labels[0];
+    if (!best) {
+      return {
+        attempted: true,
+        term: resolved,
+        ingestedLabelId: null,
+        chunksCount: 0,
+        error: `No FDA label found for "${resolved}".`,
+      };
+    }
+
+    const parsed = labelSchema.parse(best);
+    const { chunksCount } = await ingestLabelRecord(parsed as DrugLabel, supabaseAdmin);
+    return {
+      attempted: true,
+      term: resolved,
+      ingestedLabelId: parsed.id,
+      chunksCount,
+      error: null,
+    };
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : String(cause);
+    return { attempted: true, term: resolved, ingestedLabelId: null, chunksCount: 0, error: message };
+  }
+}
+
 export function buildAnswerPrompt(context: string): string {
   return `You are a grounded drug-information assistant. Answer the user's question using ONLY the labelled context below. Each source is cited as [Brand name, Section title].
 
