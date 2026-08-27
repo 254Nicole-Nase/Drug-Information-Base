@@ -35,11 +35,16 @@ export async function embedAndStoreChunks(
   label: DrugLabel,
   supabaseAdmin: SupabaseClient<Database>,
 ) {
-  const chunks: ChunkInput[] = labelSections(label).flatMap((section) =>
-    chunkSection(section.key, section.title, section.paragraphs),
-  );
+  // Full prescribing-information labels can produce hundreds of chunks; cap the
+  // ingest so one label cannot stall the request or blow the embedding budget.
+  const MAX_CHUNKS_PER_LABEL = 60;
+  const chunks: ChunkInput[] = labelSections(label)
+    .flatMap((section) => chunkSection(section.key, section.title, section.paragraphs))
+    .slice(0, MAX_CHUNKS_PER_LABEL);
 
   if (chunks.length === 0) return { chunksCount: 0 };
+
+  console.info(`Embedding ${chunks.length} chunks for label ${label.id}`);
 
   const embeddings = await embedTexts(chunks.map((c) => c.embedding_text));
 
@@ -210,6 +215,7 @@ export async function seedNextDrugs(supabaseAdmin: SupabaseClient<Database>, lim
 
   for (const drug of batch) {
     try {
+      const started = Date.now();
       const { labels } = await searchLabelsWithNormalization(drug);
       const best = labels.find((label) => (label.warnings?.length ?? 0) > 0) ?? labels[0];
       if (!best) {
@@ -217,6 +223,7 @@ export async function seedNextDrugs(supabaseAdmin: SupabaseClient<Database>, lim
         continue;
       }
       const { chunksCount } = await ingestLabelRecord(best as DrugLabel, supabaseAdmin);
+      console.info(`Seeded "${drug}" in ${Date.now() - started}ms (${chunksCount} chunks)`);
       ingested.push({ drug, labelId: best.id, chunksCount });
     } catch (cause) {
       console.error(`Seeding "${drug}" failed`, cause);
