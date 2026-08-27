@@ -62,12 +62,18 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
     throw new Error(`Embedding request failed [${response.status}]: ${body.slice(0, 300)}`);
   }
 
-
   const json = (await response.json()) as {
     data: Array<{ embedding: number[] }>;
   };
-  return json.data.map((item) => item.embedding);
+  // Truncated Gemini vectors are not unit-normalised, which breaks cosine distance.
+  return json.data.map((item) => (provider === "google" ? normalize(item.embedding) : item.embedding));
 }
+
+function normalize(vector: number[]): number[] {
+  const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
+  return magnitude > 0 ? vector.map((value) => value / magnitude) : vector;
+}
+
 
 export async function generateAnswer(
   system: string,
