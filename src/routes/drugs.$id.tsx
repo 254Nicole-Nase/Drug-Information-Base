@@ -77,12 +77,6 @@ function DrugDetail() {
   const { id } = Route.useParams();
   const { data: label } = useSuspenseQuery(labelQueryOptions(id));
 
-  if (!label) return null;
-
-  const sections = labelSections(label);
-  const effective = formatEffectiveTime(label.effective_time);
-  const sourceUrl = dailyMedUrl(label.set_id);
-
   const getStatus = useServerFn(getLabelIngestionStatus);
   const ingest = useServerFn(ingestDrugLabel);
 
@@ -101,6 +95,13 @@ function DrugDetail() {
       toast.error(error instanceof Error ? error.message : "Ingestion failed");
     },
   });
+
+  if (!label) return null;
+
+  const sections = labelSections(label);
+  const effective = formatEffectiveTime(label.effective_time);
+  const sourceUrl = dailyMedUrl(label.set_id);
+
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
