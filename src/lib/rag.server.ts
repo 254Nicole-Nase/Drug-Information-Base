@@ -4,7 +4,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { embedTexts } from "./ai.server";
 import { chunkSection, type ChunkInput } from "./chunks.server";
 import { labelSections } from "./drug-label";
-import { resolveDrugTerm, searchLabelsWithNormalization } from "./openfda.server";
+import { labelSchema, resolveDrugTerm, searchLabelsWithNormalization } from "./openfda.server";
 import type { DrugLabel } from "./openfda.functions";
 
 export type ChunkResult = {
