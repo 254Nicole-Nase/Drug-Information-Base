@@ -3,11 +3,12 @@ import { z } from "zod";
 
 import { generateAnswer } from "./ai.server";
 import { labelSchema, queryOpenFda } from "./openfda.server";
-import { buildAnswerPrompt, embedAndStoreChunks, searchCorpus } from "./rag.server";
-import type { Database, Json } from "@/integrations/supabase/types";
+import { buildAnswerPrompt, ingestLabelRecord, searchCorpus, seedNextDrugs } from "./rag.server";
+import type { Database } from "@/integrations/supabase/types";
 
 const idSchema = z.object({ id: z.string().min(1) });
 const querySchema = z.object({ query: z.string().trim().min(2).max(240) });
+const seedSchema = z.object({ limit: z.number().int().min(1).max(5).default(3) });
 
 export const getLabelIngestionStatus = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) => idSchema.parse(data))
@@ -39,29 +40,16 @@ export const ingestDrugLabel = createServerFn({ method: "POST" })
     if (!label) throw new Error("Label not found in openFDA");
 
     const parsed = labelSchema.parse(label);
-
-    const { error: upsertError } = await supabaseAdmin.from("drug_labels").upsert(
-      {
-        id: parsed.id,
-        set_id: parsed.set_id ?? null,
-        effective_time: parsed.effective_time ?? null,
-        brand_name: parsed.openfda?.brand_name?.[0] ?? null,
-        generic_name: parsed.openfda?.generic_name?.[0] ?? null,
-        substance_name: parsed.openfda?.substance_name?.[0] ?? null,
-        manufacturer_name: parsed.openfda?.manufacturer_name?.[0] ?? null,
-        route: parsed.openfda?.route?.join(", ") ?? null,
-        product_type: parsed.openfda?.product_type?.[0] ?? null,
-        pharmacologic_class: parsed.openfda?.pharm_class_epc ?? [],
-        rxcui: parsed.openfda?.rxcui ?? [],
-        label_json: parsed as unknown as Json,
-      },
-      { onConflict: "id" },
-    );
-    if (upsertError) throw upsertError;
-
-    const { chunksCount } = await embedAndStoreChunks(parsed, supabaseAdmin);
+    const { chunksCount } = await ingestLabelRecord(parsed, supabaseAdmin);
 
     return { labelId: parsed.id, chunksCount };
+  });
+
+export const seedCorpus = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => seedSchema.parse(data ?? {}))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    return seedNextDrugs(supabaseAdmin, data.limit);
   });
 
 export const getCorpusStatus = createServerFn({ method: "GET" })

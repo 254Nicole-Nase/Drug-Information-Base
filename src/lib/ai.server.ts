@@ -46,7 +46,10 @@ async function fetchWithRetry(url: string, init: RequestInit, attempts = 4): Pro
   for (let attempt = 0; attempt < attempts; attempt++) {
     if (attempt > 0) {
       const retryAfter = Number(lastRetryAfter);
-      const base = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 600 * 2 ** (attempt - 1);
+      const base =
+        Number.isFinite(retryAfter) && retryAfter > 0
+          ? retryAfter * 1000
+          : 600 * 2 ** (attempt - 1);
       await sleep(Math.min(base, 8000) + Math.random() * 250);
     }
     try {
@@ -71,9 +74,19 @@ function describeFailure(label: string, status: number, body: string): string {
   return `${label} request failed [${status}]: ${body.slice(0, 300)}`;
 }
 
+const EMBED_BATCH_SIZE = 32;
 
 export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
+
+  // Providers reject or stall on very large batches; send fixed-size batches.
+  if (texts.length > EMBED_BATCH_SIZE) {
+    const out: number[][] = [];
+    for (let i = 0; i < texts.length; i += EMBED_BATCH_SIZE) {
+      out.push(...(await embedTexts(texts.slice(i, i + EMBED_BATCH_SIZE))));
+    }
+    return out;
+  }
 
   const { provider, apiKey, baseUrl } = pickProvider();
   const model = provider === "google" ? "gemini-embedding-001" : "openai/text-embedding-3-small";
@@ -100,7 +113,6 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
     console.error(`Embedding request failed [${response.status}]: ${body}`);
     throw new Error(describeFailure("Embedding", response.status, body));
   }
-
 
   const json = (await response.json()) as {
     data: Array<{ embedding: number[] }>;
@@ -148,7 +160,6 @@ export async function generateAnswer(
     const body = await response.text();
     console.error(`Chat completion failed [${response.status}]: ${body}`);
     throw new Error(describeFailure("Answer", response.status, body));
-
   }
 
   const json = (await response.json()) as {

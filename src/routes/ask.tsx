@@ -1,9 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowRight,
   BrainCircuit,
+  Database,
   ExternalLink,
   Loader2,
   MessageSquare,
@@ -12,9 +13,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { AnswerText } from "@/components/AnswerText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { askQuestion, getCorpusStatus, searchCorpusFn } from "@/lib/rag.functions";
+import { askQuestion, getCorpusStatus, searchCorpusFn, seedCorpus } from "@/lib/rag.functions";
 
 const TITLE = "Ask the corpus — Drug Info Center";
 const DESCRIPTION =
@@ -37,7 +39,8 @@ export const Route = createFileRoute("/ask")({
 const EXAMPLES = [
   "What are the warnings for ibuprofen?",
   "How is metformin dosed?",
-  "What are the side effects of acetaminophen?",
+  "Which drugs interact with warfarin?",
+  "What is atorvastatin used for?",
 ];
 
 function Ask() {
@@ -47,6 +50,8 @@ function Ask() {
   const ask = useServerFn(askQuestion);
   const search = useServerFn(searchCorpusFn);
   const status = useServerFn(getCorpusStatus);
+  const seed = useServerFn(seedCorpus);
+  const queryClient = useQueryClient();
 
   const { data: corpus } = useQuery({
     queryKey: ["corpus", "status"],
@@ -59,6 +64,11 @@ function Ask() {
 
   const answerMutation = useMutation({
     mutationFn: (q: string) => ask({ data: { query: q } }),
+  });
+
+  const seedMutation = useMutation({
+    mutationFn: () => seed({ data: { limit: 3 } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["corpus", "status"] }),
   });
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -87,14 +97,46 @@ function Ask() {
           </div>
         </div>
 
-        {corpus ? (
-          <p className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-            {corpus.labelsCount} label{corpus.labelsCount === 1 ? "" : "s"} · {corpus.chunksCount}{" "}
-            chunk
-            {corpus.chunksCount === 1 ? "" : "s"} indexed
-          </p>
-        ) : null}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {corpus ? (
+            <p className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-foreground">
+              <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+              {corpus.labelsCount} label{corpus.labelsCount === 1 ? "" : "s"} · {corpus.chunksCount}{" "}
+              chunk
+              {corpus.chunksCount === 1 ? "" : "s"} indexed
+            </p>
+          ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => seedMutation.mutate()}
+            disabled={seedMutation.isPending}
+            className="h-7 rounded-full border-border px-3 text-xs"
+          >
+            {seedMutation.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Database className="h-3.5 w-3.5" />
+            )}
+            <span className="ml-1.5">Expand corpus</span>
+          </Button>
+          {seedMutation.data ? (
+            <span className="text-xs text-muted-foreground">
+              {seedMutation.data.ingested.length > 0
+                ? `Added ${seedMutation.data.ingested.map((item) => item.drug).join(", ")}`
+                : "Nothing new to add"}
+              {seedMutation.data.remaining > 0
+                ? ` · ${seedMutation.data.remaining} more available`
+                : " · corpus complete"}
+            </span>
+          ) : null}
+          {seedMutation.error ? (
+            <span className="text-xs text-destructive">
+              {seedMutation.error instanceof Error ? seedMutation.error.message : "Seeding failed"}
+            </span>
+          ) : null}
+        </div>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
@@ -165,10 +207,19 @@ function Ask() {
       {answerMutation.data ? (
         <div className="mt-6 space-y-6">
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-            <h2 className="font-display font-semibold text-card-foreground">Answer</h2>
-            <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-              {answerMutation.data.answer}
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-display font-semibold text-card-foreground">Answer</h2>
+              <span className="text-xs text-muted-foreground">
+                {answerMutation.data.citations.length} source
+                {answerMutation.data.citations.length === 1 ? "" : "s"}
+              </span>
             </div>
+            <div className="mt-4">
+              <AnswerText text={answerMutation.data.answer} />
+            </div>
+            <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
+              Reference information from FDA labels — not medical advice.
+            </p>
           </section>
 
           {answerMutation.data.citations.length > 0 ? (
