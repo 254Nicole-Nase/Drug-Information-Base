@@ -31,6 +31,8 @@ function mapModel(provider: Provider, model: string): string {
   return model;
 }
 
+export const EMBEDDING_DIMENSIONS = 1536;
+
 export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
 
@@ -49,19 +51,29 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
   const response = await fetch(`${baseUrl}/embeddings`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ model, input: texts }),
+    // The label_chunks.embedding column is vector(1536); gemini-embedding-001
+    // defaults to 3072, so the dimension is pinned explicitly on both providers.
+    body: JSON.stringify({ model, input: texts, dimensions: EMBEDDING_DIMENSIONS }),
   });
 
   if (!response.ok) {
     const body = await response.text();
     console.error(`Embedding request failed [${response.status}]: ${body}`);
-    throw new Error(`Embedding request failed [${response.status}]`);
+    throw new Error(`Embedding request failed [${response.status}]: ${body.slice(0, 300)}`);
   }
 
   const json = (await response.json()) as {
     data: Array<{ embedding: number[] }>;
   };
-  return json.data.map((item) => item.embedding);
+  // Truncated Gemini vectors are not unit-normalised, which breaks cosine distance.
+  return json.data.map((item) =>
+    provider === "google" ? normalize(item.embedding) : item.embedding,
+  );
+}
+
+function normalize(vector: number[]): number[] {
+  const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
+  return magnitude > 0 ? vector.map((value) => value / magnitude) : vector;
 }
 
 export async function generateAnswer(
@@ -95,7 +107,7 @@ export async function generateAnswer(
   if (!response.ok) {
     const body = await response.text();
     console.error(`Chat completion failed [${response.status}]: ${body}`);
-    throw new Error(`Chat completion failed [${response.status}]`);
+    throw new Error(`Chat completion failed [${response.status}]: ${body.slice(0, 300)}`);
   }
 
   const json = (await response.json()) as {
