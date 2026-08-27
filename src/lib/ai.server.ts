@@ -48,7 +48,7 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
     headers["Authorization"] = `Bearer ${apiKey}`;
   }
 
-  const response = await fetch(`${baseUrl}/embeddings`, {
+  const response = await fetchWithRetry(`${baseUrl}/embeddings`, {
     method: "POST",
     headers,
     // The label_chunks.embedding column is vector(1536); gemini-embedding-001
@@ -59,8 +59,9 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (!response.ok) {
     const body = await response.text();
     console.error(`Embedding request failed [${response.status}]: ${body}`);
-    throw new Error(`Embedding request failed [${response.status}]: ${body.slice(0, 300)}`);
+    throw new Error(describeFailure("Embedding", response.status, body));
   }
+
 
   const json = (await response.json()) as {
     data: Array<{ embedding: number[] }>;
