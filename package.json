@@ -11,7 +11,11 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "export:corpus": "bun run scripts/export-corpus.ts"
+    "export:corpus": "bun run scripts/export-corpus.ts",
+    "build:node": "NITRO_PRESET=node_server vite build",
+    "build:vercel": "NITRO_PRESET=vercel vite build",
+    "build:cloudflare": "NITRO_PRESET=cloudflare_module vite build",
+    "start": "node .output/server/index.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
