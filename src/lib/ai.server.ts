@@ -108,7 +108,6 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
     body: JSON.stringify({ model, input: texts, dimensions: EMBEDDING_DIMENSIONS }),
   });
 
-
   if (!response.ok) {
     const body = await response.text();
     console.error(`Embedding request failed [${response.status}]: ${body}`);
