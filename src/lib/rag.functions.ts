@@ -3,7 +3,13 @@ import { z } from "zod";
 
 import { generateAnswer } from "./ai.server";
 import { labelSchema, queryOpenFda } from "./openfda.server";
-import { buildAnswerPrompt, ingestLabelRecord, searchCorpus, seedNextDrugs } from "./rag.server";
+import {
+  autoIngestMissingDrug,
+  buildAnswerPrompt,
+  ingestLabelRecord,
+  searchCorpus,
+  seedNextDrugs,
+} from "./rag.server";
 import type { Database } from "@/integrations/supabase/types";
 
 const idSchema = z.object({ id: z.string().min(1) });
@@ -84,13 +90,24 @@ export const askQuestion = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => querySchema.parse(data))
   .handler(async ({ data }) => {
     const question = data.query;
-    const chunks = await searchCorpus(question, 8);
+    let chunks = await searchCorpus(question, 8);
+    let autoIngest: Awaited<ReturnType<typeof autoIngestMissingDrug>> | undefined;
 
     if (chunks.length === 0) {
+      autoIngest = await autoIngestMissingDrug(question);
+      if (autoIngest.ingestedLabelId) {
+        chunks = await searchCorpus(question, 8);
+      }
+    }
+
+    if (chunks.length === 0) {
+      const fallback = autoIngest?.attempted
+        ? `I couldn't find a grounded FDA label for "${autoIngest.term ?? question}" to add to the corpus.`
+        : 'No passages in the corpus mention that drug yet. Find its label via search and use "Add to corpus", then ask again.';
       return {
-        answer:
-          'No passages in the corpus mention that drug yet. Find its label via search and use "Add to corpus", then ask again.',
+        answer: fallback,
         citations: [] as typeof chunks,
+        autoIngest,
       };
     }
 
@@ -105,5 +122,5 @@ export const askQuestion = createServerFn({ method: "POST" })
       { role: "user", content: question },
     ]);
 
-    return { answer, citations: chunks };
+    return { answer, citations: chunks, autoIngest };
   });

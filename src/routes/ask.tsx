@@ -206,6 +206,29 @@ function Ask() {
 
       {answerMutation.data ? (
         <div className="mt-6 space-y-6">
+          {answerMutation.data.autoIngest ? (
+            <div
+              className={`rounded-2xl border p-4 text-sm shadow-soft ${
+                answerMutation.data.autoIngest.ingestedLabelId
+                  ? "border-primary/30 bg-primary/10 text-foreground"
+                  : "border-destructive/30 bg-destructive/10 text-destructive"
+              }`}
+            >
+              {answerMutation.data.autoIngest.ingestedLabelId ? (
+                <p>
+                  <span className="font-medium">Auto-added to corpus:</span> found an FDA label for{" "}
+                  "{answerMutation.data.autoIngest.term}" (
+                  {answerMutation.data.autoIngest.chunksCount} chunks) and answered from it.
+                </p>
+              ) : (
+                <p>
+                  <span className="font-medium">Could not auto-add:</span>{" "}
+                  {answerMutation.data.autoIngest.error ?? "No matching FDA label found."}
+                </p>
+              )}
+            </div>
+          ) : null}
+
           <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-display font-semibold text-card-foreground">Answer</h2>
