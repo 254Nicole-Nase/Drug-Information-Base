@@ -207,7 +207,7 @@ export async function autoIngestMissingDrug(question: string): Promise<AutoInges
 
   // Prefer the canonical (normalized) term if present; otherwise the first term.
   const resolved =
-    drugTerms.find((t) => !question.toLowerCase().includes(t.toLowerCase())) ?? drugTerms[0];
+    drugTerms.find((t) => !question.toLowerCase().includes(t.toLowerCase())) ?? drugTerms[0]!;
 
   try {
     const { labels } = await searchLabelsWithNormalization(resolved);
