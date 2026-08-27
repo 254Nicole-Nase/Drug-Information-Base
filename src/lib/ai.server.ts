@@ -133,7 +133,7 @@ export async function generateAnswer(
     headers["Authorization"] = `Bearer ${apiKey}`;
   }
 
-  const response = await fetch(`${baseUrl}/chat/completions`, {
+  const response = await fetchWithRetry(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -147,7 +147,8 @@ export async function generateAnswer(
   if (!response.ok) {
     const body = await response.text();
     console.error(`Chat completion failed [${response.status}]: ${body}`);
-    throw new Error(`Chat completion failed [${response.status}]: ${body.slice(0, 300)}`);
+    throw new Error(describeFailure("Answer", response.status, body));
+
   }
 
   const json = (await response.json()) as {
