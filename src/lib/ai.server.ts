@@ -33,6 +33,45 @@ function mapModel(provider: Provider, model: string): string {
 
 export const EMBEDDING_DIMENSIONS = 1536;
 
+const RETRYABLE = new Set([408, 429, 500, 502, 503, 504]);
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Gemini/gateway endpoints return transient 429/503s under load; retry with
+// backoff + jitter before surfacing the failure to the user.
+async function fetchWithRetry(url: string, init: RequestInit, attempts = 4): Promise<Response> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (attempt > 0) {
+      const retryAfter = Number(lastRetryAfter);
+      const base = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 600 * 2 ** (attempt - 1);
+      await sleep(Math.min(base, 8000) + Math.random() * 250);
+    }
+    try {
+      const response = await fetch(url, init);
+      if (!RETRYABLE.has(response.status) || attempt === attempts - 1) return response;
+      lastRetryAfter = response.headers.get("retry-after");
+      await response.text().catch(() => undefined);
+    } catch (error) {
+      lastError = error;
+      if (attempt === attempts - 1) throw error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Request failed after retries");
+}
+
+let lastRetryAfter: string | null = null;
+
+function describeFailure(label: string, status: number, body: string): string {
+  if (RETRYABLE.has(status)) {
+    return `${label} service is temporarily unavailable (${status}) after several retries. Please try again in a moment.`;
+  }
+  return `${label} request failed [${status}]: ${body.slice(0, 300)}`;
+}
+
+
 export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
 
@@ -48,7 +87,7 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
     headers["Authorization"] = `Bearer ${apiKey}`;
   }
 
-  const response = await fetch(`${baseUrl}/embeddings`, {
+  const response = await fetchWithRetry(`${baseUrl}/embeddings`, {
     method: "POST",
     headers,
     // The label_chunks.embedding column is vector(1536); gemini-embedding-001
@@ -59,8 +98,9 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (!response.ok) {
     const body = await response.text();
     console.error(`Embedding request failed [${response.status}]: ${body}`);
-    throw new Error(`Embedding request failed [${response.status}]: ${body.slice(0, 300)}`);
+    throw new Error(describeFailure("Embedding", response.status, body));
   }
+
 
   const json = (await response.json()) as {
     data: Array<{ embedding: number[] }>;
@@ -93,7 +133,7 @@ export async function generateAnswer(
     headers["Authorization"] = `Bearer ${apiKey}`;
   }
 
-  const response = await fetch(`${baseUrl}/chat/completions`, {
+  const response = await fetchWithRetry(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -107,7 +147,8 @@ export async function generateAnswer(
   if (!response.ok) {
     const body = await response.text();
     console.error(`Chat completion failed [${response.status}]: ${body}`);
-    throw new Error(`Chat completion failed [${response.status}]: ${body.slice(0, 300)}`);
+    throw new Error(describeFailure("Answer", response.status, body));
+
   }
 
   const json = (await response.json()) as {
