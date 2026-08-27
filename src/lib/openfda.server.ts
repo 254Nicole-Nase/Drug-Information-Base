@@ -70,7 +70,13 @@ const rxnavSchema = z.object({
   approximateGroup: z
     .object({
       candidate: z
-        .array(z.object({ rxcui: z.string().optional(), name: z.string().optional() }))
+        .array(
+          z.object({
+            rxcui: z.string().optional(),
+            name: z.string().optional(),
+            score: z.string().optional(),
+          }),
+        )
         .optional(),
     })
     .optional(),
@@ -106,6 +112,37 @@ export async function normalizeDrugName(term: string): Promise<string | null> {
     return name.replace(/["\\]/g, "").trim();
   } catch (error) {
     console.error("RxNav normalization failed", error);
+    return null;
+  }
+}
+
+/**
+ * Decides whether a free-text word is a real drug name and returns its
+ * canonical RxNorm name. Unlike normalizeDrugName this rejects approximate
+ * low-score matches — approximateTerm happily maps junk words ("side",
+ * "effects") to unrelated drugs, which would poison retrieval filtering.
+ * Exact/near-exact matches score 100; we require >= 80.
+ */
+export async function resolveDrugTerm(
+  term: string,
+): Promise<{ term: string; canonical: string } | null> {
+  try {
+    const url = `${RXNAV_BASE}/approximateTerm.json?term=${encodeURIComponent(term)}&maxEntries=1&option=1`;
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!response.ok) return null;
+
+    const candidate = rxnavSchema.parse(await response.json()).approximateGroup?.candidate?.[0];
+    if (!candidate?.rxcui || Number(candidate.score ?? 0) < 80) return null;
+
+    const propsResponse = await fetch(`${RXNAV_BASE}/rxcui/${candidate.rxcui}/properties.json`, {
+      headers: { Accept: "application/json" },
+    });
+    if (!propsResponse.ok) return null;
+
+    const name = rxcuiPropsSchema.parse(await propsResponse.json()).properties?.name ?? null;
+    if (!name) return null;
+    return { term, canonical: name.replace(/["\\]/g, "").trim() };
+  } catch {
     return null;
   }
 }

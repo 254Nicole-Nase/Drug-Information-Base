@@ -81,19 +81,25 @@ function extractCandidateTerms(question: string): string[] {
     .slice(0, 4);
 }
 
-async function normalizedAliases(question: string): Promise<string[]> {
+/**
+ * Resolves candidate words in the question against RxNav. Returns the terms
+ * that are real drugs plus their normalized aliases (e.g. "ozempic" ->
+ * "semaglutide"). Non-drug words resolve to null and are ignored.
+ */
+async function resolveDrugTerms(question: string): Promise<string[]> {
   const candidates = extractCandidateTerms(question);
   const results = await Promise.all(
     candidates.map(async (term) => {
       try {
         const normalized = await normalizeDrugName(term);
-        return normalized && normalized !== term ? normalized : null;
+        if (!normalized) return null;
+        return normalized === term ? [term] : [term, normalized];
       } catch {
         return null;
       }
     }),
   );
-  return [...new Set(results.filter((v): v is string => Boolean(v)))];
+  return [...new Set(results.filter((v): v is string[] => Boolean(v)).flat())];
 }
 
 type HybridRow = {
@@ -124,18 +130,13 @@ async function runHybridSearch(
 export async function searchCorpus(question: string, matchCount = 8): Promise<ChunkResult[]> {
   const supabase = createPublishableClient();
 
-  // Retry once with RxNav-normalized aliases when the raw question finds
-  // nothing (handles brand names and regional synonyms like paracetamol).
-  let queryText = question;
-  let rows = await runHybridSearch(supabase, question, matchCount);
-  if (rows.length === 0) {
-    const aliases = await normalizedAliases(question);
-    if (aliases.length > 0) {
-      queryText = `${question} ${aliases.join(" ")}`;
-      rows = await runHybridSearch(supabase, queryText, matchCount);
-    }
-  }
+  // Resolve drug names up front (brand names, regional synonyms like
+  // paracetamol) and search with the aliases included from the start.
+  const drugTerms = await resolveDrugTerms(question);
+  const aliases = drugTerms.filter((term) => !question.toLowerCase().includes(term.toLowerCase()));
+  const queryText = aliases.length > 0 ? `${question} ${aliases.join(" ")}` : question;
 
+  const rows = await runHybridSearch(supabase, queryText, matchCount);
   if (rows.length === 0) return [];
 
   const labelIds = [...new Set(rows.map((r) => r.label_id))];
@@ -163,10 +164,24 @@ export async function searchCorpus(question: string, matchCount = 8): Promise<Ch
     ]),
   );
 
-  return rows.map((row) => {
+  const results: ChunkResult[] = rows.map((row) => {
     const label = labelMap.get(row.label_id);
     return label ? { ...row, label } : { ...row };
   });
+
+  // Relevance gate: when the question names a drug, hybrid search can still
+  // return generic noise (RRF has no score floor). Keep only chunks that
+  // actually mention the drug — in the passage or the product name.
+  if (drugTerms.length > 0) {
+    const relevant = results.filter((chunk) => {
+      const haystack =
+        `${chunk.content} ${chunk.section_title} ${chunk.label?.brand_name ?? ""} ${chunk.label?.generic_name ?? ""}`.toLowerCase();
+      return drugTerms.some((term) => haystack.includes(term.toLowerCase()));
+    });
+    return relevant;
+  }
+
+  return results;
 }
 
 export function buildAnswerPrompt(context: string): string {
