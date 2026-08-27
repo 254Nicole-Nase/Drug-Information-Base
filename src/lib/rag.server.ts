@@ -222,6 +222,14 @@ export const SEED_DRUGS = [
   "salbutamol",
   "ciprofloxacin",
   "aspirin",
+  "semaglutide",
+  "tirzepatide",
+  "liraglutide",
+  "empagliflozin",
+  "clopidogrel",
+  "gabapentin",
+  "tramadol",
+  "doxycycline",
 ] as const;
 
 export async function ingestLabelRecord(
