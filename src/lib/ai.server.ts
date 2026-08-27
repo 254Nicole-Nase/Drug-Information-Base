@@ -74,8 +74,19 @@ function describeFailure(label: string, status: number, body: string): string {
   return `${label} request failed [${status}]: ${body.slice(0, 300)}`;
 }
 
+const EMBED_BATCH_SIZE = 32;
+
 export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
+
+  // Providers reject or stall on very large batches; send fixed-size batches.
+  if (texts.length > EMBED_BATCH_SIZE) {
+    const out: number[][] = [];
+    for (let i = 0; i < texts.length; i += EMBED_BATCH_SIZE) {
+      out.push(...(await embedTexts(texts.slice(i, i + EMBED_BATCH_SIZE))));
+    }
+    return out;
+  }
 
   const { provider, apiKey, baseUrl } = pickProvider();
   const model = provider === "google" ? "gemini-embedding-001" : "openai/text-embedding-3-small";
@@ -96,6 +107,7 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
     // defaults to 3072, so the dimension is pinned explicitly on both providers.
     body: JSON.stringify({ model, input: texts, dimensions: EMBEDDING_DIMENSIONS }),
   });
+
 
   if (!response.ok) {
     const body = await response.text();
