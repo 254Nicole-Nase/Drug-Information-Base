@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+.output
+.nitro
+.wrangler
+.tanstack
+.git
+.github
+.env
+.env.*
+*.log
+tsconfig.tsbuildinfo
+docs

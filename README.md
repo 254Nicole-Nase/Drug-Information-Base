@@ -60,18 +60,24 @@ cp .env.example .env   # fill in your own values
 bun run dev
 ```
 
-Scripts: `dev`, `build`, `lint`, `test`, `format`.
+Scripts: `dev`, `build`, `lint`, `test`, `format`, plus target-specific builds
+(`build:node`, `build:vercel`, `build:cloudflare`) and `start`.
 
-Docker:
+## Deployment
+
+Docker, Vercel and Cloudflare Workers configs are committed
+(`Dockerfile`, `docker-compose.yml`, `vercel.json`, `wrangler.toml`).
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the environment variables
+and per-host steps:
 
 ```sh
-docker build -t drug-info-center .
-docker run -p 3000:3000 --env-file .env drug-info-center
+docker compose up --build     # http://localhost:3000
 ```
 
 Bringing your own Postgres/Supabase project: apply
 [`supabase/schema.sql`](supabase/schema.sql) and follow
 [`docs/SUPABASE_SETUP.md`](docs/SUPABASE_SETUP.md).
+
 
 ## Testing and CI
 

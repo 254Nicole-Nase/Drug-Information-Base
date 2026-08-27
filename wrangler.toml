@@ -1,0 +1,14 @@
+# Nitro generates the real Worker config (entry + assets) into the build output
+# and points wrangler at it via .wrangler/deploy/config.json, so this file only
+# carries the project name, compatibility settings and plain vars.
+name = "drug-info-center"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Secrets (never commit these):
+#   bunx wrangler secret put SUPABASE_PUBLISHABLE_KEY
+#   bunx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+#   bunx wrangler secret put LOVABLE_API_KEY
+
+[vars]
+SUPABASE_URL = "https://ypkeqesrvsnxkmvcyzcm.supabase.co"
