@@ -66,14 +66,15 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
     data: Array<{ embedding: number[] }>;
   };
   // Truncated Gemini vectors are not unit-normalised, which breaks cosine distance.
-  return json.data.map((item) => (provider === "google" ? normalize(item.embedding) : item.embedding));
+  return json.data.map((item) =>
+    provider === "google" ? normalize(item.embedding) : item.embedding,
+  );
 }
 
 function normalize(vector: number[]): number[] {
   const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
   return magnitude > 0 ? vector.map((value) => value / magnitude) : vector;
 }
-
 
 export async function generateAnswer(
   system: string,
@@ -106,7 +107,7 @@ export async function generateAnswer(
   if (!response.ok) {
     const body = await response.text();
     console.error(`Chat completion failed [${response.status}]: ${body}`);
-    throw new Error(`Chat completion failed [${response.status}]`);
+    throw new Error(`Chat completion failed [${response.status}]: ${body.slice(0, 300)}`);
   }
 
   const json = (await response.json()) as {
