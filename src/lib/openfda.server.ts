@@ -86,6 +86,10 @@ const rxcuiPropsSchema = z.object({
   properties: z.object({ name: z.string().optional() }).nullish(),
 });
 
+const rxcuiSearchSchema = z.object({
+  idGroup: z.object({ rxnormId: z.array(z.string()).optional() }).optional(),
+});
+
 /**
  * RxNorm/RxNav name normalization — maps international or misspelled names to the
  * US ingredient name openFDA indexes (e.g. "paracetamol" -> "acetaminophen").
