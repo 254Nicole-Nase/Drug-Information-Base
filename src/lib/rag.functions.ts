@@ -89,7 +89,7 @@ export const askQuestion = createServerFn({ method: "POST" })
     if (chunks.length === 0) {
       return {
         answer:
-          "I don't have any grounded label passages in the corpus yet. Try adding a relevant drug label first.",
+          'No passages in the corpus mention that drug yet. Find its label via search and use "Add to corpus", then ask again.',
         citations: [] as typeof chunks,
       };
     }
