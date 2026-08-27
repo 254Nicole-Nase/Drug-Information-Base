@@ -91,9 +91,10 @@ async function resolveDrugTerms(question: string): Promise<string[]> {
   const results = await Promise.all(
     candidates.map(async (term) => {
       try {
-        const normalized = await normalizeDrugName(term);
-        if (!normalized) return null;
-        return normalized === term ? [term] : [term, normalized];
+        const resolved = await resolveDrugTerm(term);
+        if (!resolved) return null;
+        const { canonical } = resolved;
+        return canonical.toLowerCase() === term ? [term] : [term, canonical.toLowerCase()];
       } catch {
         return null;
       }
