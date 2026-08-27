@@ -106,6 +106,21 @@ type HybridRow = {
   keyword_rank: number;
 };
 
+async function runHybridSearch(
+  supabase: SupabaseClient<Database>,
+  queryText: string,
+  matchCount: number,
+): Promise<HybridRow[]> {
+  const [embedding] = await embedTexts([queryText]);
+  const { data, error } = await supabase.rpc("match_chunks_hybrid", {
+    query_embedding: embedding as unknown as string,
+    query_text: queryText,
+    match_count: matchCount,
+  });
+  if (error) throw error;
+  return (data ?? []) as HybridRow[];
+}
+
 export async function searchCorpus(question: string, matchCount = 8): Promise<ChunkResult[]> {
   const supabase = createPublishableClient();
 
