@@ -4,7 +4,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { embedTexts } from "./ai.server";
 import { chunkSection, type ChunkInput } from "./chunks.server";
 import { labelSections } from "./drug-label";
-import { searchLabelsWithNormalization } from "./openfda.server";
+import { normalizeDrugName, searchLabelsWithNormalization } from "./openfda.server";
 import type { DrugLabel } from "./openfda.functions";
 
 export type ChunkResult = {
@@ -68,26 +68,73 @@ export async function embedAndStoreChunks(
   return { chunksCount: chunks.length };
 }
 
-export async function searchCorpus(question: string, matchCount = 8): Promise<ChunkResult[]> {
-  const [embedding] = await embedTexts([question]);
-  const supabase = createPublishableClient();
+// Pull out candidate drug names from a free-text question so they can be
+// normalized via RxNav (e.g. "paracetamol" -> "acetaminophen", brand names
+// like "Ozempic" -> "semaglutide"). Bounded to the 4 longest words.
+function extractCandidateTerms(question: string): string[] {
+  return question
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .split(/\s+/)
+    .filter((word) => word.length >= 4)
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 4);
+}
 
+async function normalizedAliases(question: string): Promise<string[]> {
+  const candidates = extractCandidateTerms(question);
+  const results = await Promise.all(
+    candidates.map(async (term) => {
+      try {
+        const normalized = await normalizeDrugName(term);
+        return normalized && normalized !== term ? normalized : null;
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return [...new Set(results.filter((v): v is string => Boolean(v)))];
+}
+
+type HybridRow = {
+  chunk_id: string;
+  label_id: string;
+  section_key: string;
+  section_title: string;
+  content: string;
+  similarity: number;
+  keyword_rank: number;
+};
+
+async function runHybridSearch(
+  supabase: SupabaseClient<Database>,
+  queryText: string,
+  matchCount: number,
+): Promise<HybridRow[]> {
+  const [embedding] = await embedTexts([queryText]);
   const { data, error } = await supabase.rpc("match_chunks_hybrid", {
     query_embedding: embedding as unknown as string,
-    query_text: question,
+    query_text: queryText,
     match_count: matchCount,
   });
   if (error) throw error;
+  return (data ?? []) as HybridRow[];
+}
 
-  const rows = (data ?? []) as Array<{
-    chunk_id: string;
-    label_id: string;
-    section_key: string;
-    section_title: string;
-    content: string;
-    similarity: number;
-    keyword_rank: number;
-  }>;
+export async function searchCorpus(question: string, matchCount = 8): Promise<ChunkResult[]> {
+  const supabase = createPublishableClient();
+
+  // Retry once with RxNav-normalized aliases when the raw question finds
+  // nothing (handles brand names and regional synonyms like paracetamol).
+  let queryText = question;
+  let rows = await runHybridSearch(supabase, question, matchCount);
+  if (rows.length === 0) {
+    const aliases = await normalizedAliases(question);
+    if (aliases.length > 0) {
+      queryText = `${question} ${aliases.join(" ")}`;
+      rows = await runHybridSearch(supabase, queryText, matchCount);
+    }
+  }
 
   if (rows.length === 0) return [];
 
