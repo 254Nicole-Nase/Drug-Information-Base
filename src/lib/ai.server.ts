@@ -31,6 +31,8 @@ function mapModel(provider: Provider, model: string): string {
   return model;
 }
 
+export const EMBEDDING_DIMENSIONS = 1536;
+
 export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
 
@@ -49,14 +51,17 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
   const response = await fetch(`${baseUrl}/embeddings`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ model, input: texts }),
+    // The label_chunks.embedding column is vector(1536); gemini-embedding-001
+    // defaults to 3072, so the dimension is pinned explicitly on both providers.
+    body: JSON.stringify({ model, input: texts, dimensions: EMBEDDING_DIMENSIONS }),
   });
 
   if (!response.ok) {
     const body = await response.text();
     console.error(`Embedding request failed [${response.status}]: ${body}`);
-    throw new Error(`Embedding request failed [${response.status}]`);
+    throw new Error(`Embedding request failed [${response.status}]: ${body.slice(0, 300)}`);
   }
+
 
   const json = (await response.json()) as {
     data: Array<{ embedding: number[] }>;
