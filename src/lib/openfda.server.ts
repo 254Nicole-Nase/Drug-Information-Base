@@ -127,6 +127,16 @@ export async function resolveDrugTerm(
   term: string,
 ): Promise<{ term: string; canonical: string } | null> {
   try {
+    // Exact match first: a word that IS an RxNorm name never needs fuzzy scoring.
+    const exactResponse = await fetch(
+      `${RXNAV_BASE}/rxcui.json?name=${encodeURIComponent(term)}&search=1`,
+      { headers: { Accept: "application/json" } },
+    );
+    if (exactResponse.ok) {
+      const exact = rxcuiSearchSchema.parse(await exactResponse.json());
+      if (exact.idGroup?.rxnormId?.[0]) return { term, canonical: term };
+    }
+
     const url = `${RXNAV_BASE}/approximateTerm.json?term=${encodeURIComponent(term)}&maxEntries=1&option=1`;
     const response = await fetch(url, { headers: { Accept: "application/json" } });
     if (!response.ok) return null;
