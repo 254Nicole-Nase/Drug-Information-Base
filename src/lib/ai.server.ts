@@ -185,4 +185,3 @@ export async function generateAnswer(
   }
   return content;
 }
-
