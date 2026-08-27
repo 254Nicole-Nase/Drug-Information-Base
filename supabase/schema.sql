@@ -75,7 +75,7 @@ RETURNS TABLE(
 )
 LANGUAGE sql STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
   SELECT
     id AS chunk_id,
@@ -108,7 +108,7 @@ RETURNS TABLE(
 )
 LANGUAGE sql STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 WITH vector_matches AS (
   SELECT
