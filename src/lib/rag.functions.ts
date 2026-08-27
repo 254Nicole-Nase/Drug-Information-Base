@@ -3,7 +3,13 @@ import { z } from "zod";
 
 import { generateAnswer } from "./ai.server";
 import { labelSchema, queryOpenFda } from "./openfda.server";
-import { buildAnswerPrompt, ingestLabelRecord, searchCorpus, seedNextDrugs } from "./rag.server";
+import {
+  autoIngestMissingDrug,
+  buildAnswerPrompt,
+  ingestLabelRecord,
+  searchCorpus,
+  seedNextDrugs,
+} from "./rag.server";
 import type { Database } from "@/integrations/supabase/types";
 
 const idSchema = z.object({ id: z.string().min(1) });
