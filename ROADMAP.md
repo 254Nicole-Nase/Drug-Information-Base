@@ -3,7 +3,7 @@
 Turning a PHP 8 + MySQL coursework CRUD app into a portfolio-grade, grounded,
 evaluated health-AI application.
 
-**Positioning:** *A grounded, cited, evaluated drug-information assistant.*
+**Positioning:** _A grounded, cited, evaluated drug-information assistant._
 Not "an AI chatbot for drugs" — the differentiator is verifiable grounding and
 a real evaluation suite, not the LLM call.
 
@@ -49,7 +49,7 @@ grounding/refusal behaviour.
 - [x] Gold set in `src/lib/eval-set.ts` (grounded + adversarial cases)
 - [x] Ragas-style scoring: faithfulness, answer relevance, context precision,
       refusal accuracy — LLM-as-judge in `src/lib/eval.server.ts`
-- [x] Adversarial set the system *must refuse* (patient-specific dosing,
+- [x] Adversarial set the system _must refuse_ (patient-specific dosing,
       diagnosis, off-label use, non-existent drug)
 - [x] `/evals` dashboard: run the suite live, per-case drill-down, skip
       handling for drugs not yet ingested
@@ -73,7 +73,7 @@ evidence, and cites the source labels with links. Verified: warfarin ×
 ibuprofen → "Major signal" (bleeding-risk table), build clean.
 
 - [x] Normalize the mentioned drugs to RxNorm concepts (via RxNav)
-- [x] Pairwise checker returning the *source sentence* for every hit, never a
+- [x] Pairwise checker returning the _source sentence_ for every hit, never a
       generated claim
 - [ ] Extract interaction statements into a structured `interactions` table
       (stretch — enables offline/fast checks and multi-drug matrices)
@@ -124,16 +124,16 @@ with a link to the official register — the honesty is part of the design.
 
 ## Data sources
 
-| Source | Use | Terms |
-|---|---|---|
-| openFDA `/drug/label`, `/drug/event`, `/drug/ndc` | Primary grounding corpus | Free, public domain; API key raises rate limits |
-| DailyMed SPL | Full label documents | Free, public domain (NLM) |
-| RxNorm / RxNav | Name normalization, RxClass | Free (DDI endpoint retired Jan 2024) |
-| PubChem / ChEMBL | Compound + bioactivity data | Free REST |
-| Europe PMC / PubMed | Literature grounding | Free REST |
-| WHO ATC | Classification | Free reference data |
-| Pharmacy and Poisons Board (KE) | Kenyan registration status | Public web tables, no API — scrape |
-| DrugBank | Curated interactions | **Not free for production**; academic licence only |
+| Source                                            | Use                         | Terms                                              |
+| ------------------------------------------------- | --------------------------- | -------------------------------------------------- |
+| openFDA `/drug/label`, `/drug/event`, `/drug/ndc` | Primary grounding corpus    | Free, public domain; API key raises rate limits    |
+| DailyMed SPL                                      | Full label documents        | Free, public domain (NLM)                          |
+| RxNorm / RxNav                                    | Name normalization, RxClass | Free (DDI endpoint retired Jan 2024)               |
+| PubChem / ChEMBL                                  | Compound + bioactivity data | Free REST                                          |
+| Europe PMC / PubMed                               | Literature grounding        | Free REST                                          |
+| WHO ATC                                           | Classification              | Free reference data                                |
+| Pharmacy and Poisons Board (KE)                   | Kenyan registration status  | Public web tables, no API — scrape                 |
+| DrugBank                                          | Curated interactions        | **Not free for production**; academic licence only |
 
 ## Immediate housekeeping on the original repo
 

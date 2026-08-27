@@ -115,21 +115,12 @@
     oklch(0.36 0.086 214) 45%,
     oklch(0.5 0.104 191) 100%
   );
-  --gradient-primary: linear-gradient(
-    135deg,
-    var(--primary) 0%,
-    var(--primary-glow) 100%
-  );
-  --gradient-surface: linear-gradient(
-    180deg,
-    oklch(1 0 0) 0%,
-    oklch(0.975 0.012 200) 100%
-  );
-  --shadow-soft: 0 1px 2px oklch(0.21 0.035 232 / 6%),
-    0 8px 24px -12px oklch(0.21 0.035 232 / 18%);
+  --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-glow) 100%);
+  --gradient-surface: linear-gradient(180deg, oklch(1 0 0) 0%, oklch(0.975 0.012 200) 100%);
+  --shadow-soft: 0 1px 2px oklch(0.21 0.035 232 / 6%), 0 8px 24px -12px oklch(0.21 0.035 232 / 18%);
   --shadow-elevated: 0 24px 60px -28px oklch(0.36 0.086 214 / 45%);
-  --shadow-glow: 0 0 0 1px oklch(0.53 0.113 213 / 18%),
-    0 18px 45px -22px oklch(0.53 0.113 213 / 55%);
+  --shadow-glow:
+    0 0 0 1px oklch(0.53 0.113 213 / 18%), 0 18px 45px -22px oklch(0.53 0.113 213 / 55%);
 }
 
 .dark {
@@ -171,11 +162,7 @@
   --sidebar-border: oklch(1 0 0 / 12%);
   --sidebar-ring: oklch(0.74 0.124 191);
 
-  --gradient-surface: linear-gradient(
-    180deg,
-    oklch(0.26 0.04 232) 0%,
-    oklch(0.22 0.036 234) 100%
-  );
+  --gradient-surface: linear-gradient(180deg, oklch(0.26 0.04 232) 0%, oklch(0.22 0.036 234) 100%);
 }
 
 @layer base {
@@ -222,4 +209,3 @@
 @utility shadow-glow {
   box-shadow: var(--shadow-glow);
 }
-

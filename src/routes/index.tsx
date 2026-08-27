@@ -92,9 +92,9 @@ function Home() {
             </span>
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-primary-foreground/80">
-            A reference grounded in official FDA structured product labelling. Nothing here
-            is invented — every statement is quoted from a published label, with a link back
-            to the document it came from.
+            A reference grounded in official FDA structured product labelling. Nothing here is
+            invented — every statement is quoted from a published label, with a link back to the
+            document it came from.
           </p>
 
           <form
@@ -159,8 +159,8 @@ function Home() {
 
           {!isFetching && data && data.labels.length === 0 ? (
             <p className="rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground shadow-soft">
-              No labels matched “{query}”. openFDA indexes US products only, and RxNorm had
-              no equivalent name to fall back on.
+              No labels matched “{query}”. openFDA indexes US products only, and RxNorm had no
+              equivalent name to fall back on.
             </p>
           ) : null}
 
@@ -177,7 +177,6 @@ function Home() {
               ) : null}
               <ul className="mt-4 grid gap-4 sm:grid-cols-2">
                 {data.labels.map((label) => (
-
                   <li key={label.id}>
                     <Link
                       to="/drugs/$id"
@@ -185,14 +184,11 @@ function Home() {
                       data-testid="result-card"
                       className="group flex h-full flex-col rounded-2xl border border-border bg-gradient-surface p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated"
                     >
-
                       <span className="font-display font-semibold text-card-foreground">
                         {labelTitle(label)}
                       </span>
                       {labelSubtitle(label) ? (
-                        <span className="mt-1 text-sm text-primary">
-                          {labelSubtitle(label)}
-                        </span>
+                        <span className="mt-1 text-sm text-primary">{labelSubtitle(label)}</span>
                       ) : null}
                       <span className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
                         {label.openfda?.manufacturer_name?.[0] ?? "Labeler not stated"}
@@ -208,16 +204,11 @@ function Home() {
 
         <section className="mt-16 grid gap-4 md:grid-cols-3">
           {PILLARS.map(({ icon: Icon, title, body }) => (
-            <div
-              key={title}
-              className="rounded-2xl border border-border bg-card p-6 shadow-soft"
-            >
+            <div key={title} className="rounded-2xl border border-border bg-card p-6 shadow-soft">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
                 <Icon className="h-5 w-5" aria-hidden="true" />
               </span>
-              <h2 className="mt-4 font-display font-semibold text-card-foreground">
-                {title}
-              </h2>
+              <h2 className="mt-4 font-display font-semibold text-card-foreground">{title}</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
             </div>
           ))}

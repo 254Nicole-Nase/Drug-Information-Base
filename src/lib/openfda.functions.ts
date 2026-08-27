@@ -10,9 +10,7 @@ import {
 export type DrugLabel = DrugLabelRecord;
 
 export const searchDrugLabels = createServerFn({ method: "GET" })
-  .inputValidator((data: unknown) =>
-    z.object({ query: z.string().trim().max(120) }).parse(data),
-  )
+  .inputValidator((data: unknown) => z.object({ query: z.string().trim().max(120) }).parse(data))
   .handler(async ({ data }) => {
     const term = data.query.replace(/["\\]/g, "").trim();
     if (term.length < 2) {

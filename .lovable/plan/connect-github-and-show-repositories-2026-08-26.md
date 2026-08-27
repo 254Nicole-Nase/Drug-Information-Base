@@ -1,6 +1,7 @@
 # Connect GitHub and show repositories
 
 ## Goal
+
 Link the workspace GitHub App connector to this project and build a page that lists the connected account's repositories.
 
 ## Steps
@@ -32,6 +33,7 @@ Link the workspace GitHub App connector to this project and build a page that li
    - Check the build log after edits and confirm the preview shows the repository list.
 
 ## Technical details
+
 - Stack: TanStack Start v1, React 19, Tailwind CSS v4, shadcn/ui tokens.
 - Server boundary: `createServerFn` from `@tanstack/react-start`; gateway call from server-side only.
 - No database or Lovable Cloud required for this read-only GitHub integration.

@@ -13,14 +13,14 @@ generation (RAG) application with a real evaluation suite.
 
 ## What it does
 
-| Route | Feature |
-| --- | --- |
-| `/` | Drug label search over openFDA, with RxNorm name normalization (`paracetamol` → `acetaminophen`) |
-| `/drugs/$id` | Full label view, structured warnings, "Add to corpus" ingestion |
-| `/ask` | Natural-language Q&A over the ingested corpus, hybrid retrieval, mandatory citations, refusal when unsupported |
+| Route           | Feature                                                                                                               |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `/`             | Drug label search over openFDA, with RxNorm name normalization (`paracetamol` → `acetaminophen`)                      |
+| `/drugs/$id`    | Full label view, structured warnings, "Add to corpus" ingestion                                                       |
+| `/ask`          | Natural-language Q&A over the ingested corpus, hybrid retrieval, mandatory citations, refusal when unsupported        |
 | `/interactions` | Pairwise interaction checker built from label `drug_interactions` sections, with severity hints and verbatim evidence |
-| `/kenya` | Kenyan-market availability: local brand equivalents, manufacturers, WHO ATC classes |
-| `/evals` | Live Ragas-style evaluation dashboard: faithfulness, answer relevance, context precision, refusal accuracy |
+| `/kenya`        | Kenyan-market availability: local brand equivalents, manufacturers, WHO ATC classes                                   |
+| `/evals`        | Live Ragas-style evaluation dashboard: faithfulness, answer relevance, context precision, refusal accuracy            |
 
 ## Architecture
 
@@ -45,8 +45,8 @@ question ──► embed ──► match_chunks_hybrid (vector + BM25, RRF) ─�
 
 - **The RxNav drug–drug interaction API was retired in January 2024**, so the
   usual tutorial path no longer exists. `/interactions` instead extracts
-  cross-mentions from FDA label interaction sections and returns the *source
-  sentence* for every hit — never a generated claim.
+  cross-mentions from FDA label interaction sections and returns the _source
+  sentence_ for every hit — never a generated claim.
 - **Grounding over fluency:** the answer prompt forbids uncited claims and the
   adversarial eval set asserts the system refuses unsafe requests.
 - **Kenya reference data is labelled as a curated sample**, not the official
@@ -77,7 +77,6 @@ docker compose up --build     # http://localhost:3000
 Bringing your own Postgres/Supabase project: apply
 [`supabase/schema.sql`](supabase/schema.sql) and follow
 [`docs/SUPABASE_SETUP.md`](docs/SUPABASE_SETUP.md).
-
 
 ## Testing and CI
 

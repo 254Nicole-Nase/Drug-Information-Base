@@ -155,9 +155,7 @@ function KenyaPage() {
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
-                        <h2 className="font-display text-lg font-semibold">
-                          {product.brand_name}
-                        </h2>
+                        <h2 className="font-display text-lg font-semibold">{product.brand_name}</h2>
                         <p className="text-sm text-muted-foreground">
                           {product.generic_name}
                           {product.strength ? ` · ${product.strength}` : ""}

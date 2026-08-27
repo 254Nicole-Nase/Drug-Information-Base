@@ -30,7 +30,6 @@ export const getLabelIngestionStatus = createServerFn({ method: "GET" })
   });
 
 export const ingestDrugLabel = createServerFn({ method: "POST" })
-
   .inputValidator((data: unknown) => idSchema.parse(data))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -114,7 +113,9 @@ export const askQuestion = createServerFn({ method: "POST" })
       })
       .join("\n\n");
 
-    const answer = await generateAnswer(buildAnswerPrompt(context), [{ role: "user", content: question }]);
+    const answer = await generateAnswer(buildAnswerPrompt(context), [
+      { role: "user", content: question },
+    ]);
 
     return { answer, citations: chunks };
   });

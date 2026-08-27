@@ -12,8 +12,7 @@ import { writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
 const url = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"];
-const key =
-  process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
 
 if (!url || !key) {
   console.error("Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY first.");
@@ -46,7 +45,10 @@ async function fetchAll(table: string) {
   const rows: Record<string, unknown>[] = [];
   const pageSize = 500;
   for (let from = 0; ; from += pageSize) {
-    const { data, error } = await supabase.from(table).select("*").range(from, from + pageSize - 1);
+    const { data, error } = await supabase
+      .from(table)
+      .select("*")
+      .range(from, from + pageSize - 1);
     if (error) throw error;
     rows.push(...(data ?? []));
     if (!data || data.length < pageSize) break;
