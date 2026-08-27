@@ -197,9 +197,7 @@ export type AutoIngestResult = {
  * Tries to find an openFDA label for a drug mentioned in the question and
  * ingest it on the fly. Returns metadata so the UI can report what happened.
  */
-export async function autoIngestMissingDrug(
-  question: string,
-): Promise<AutoIngestResult> {
+export async function autoIngestMissingDrug(question: string): Promise<AutoIngestResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
   const drugTerms = await resolveDrugTerms(question);
@@ -208,7 +206,8 @@ export async function autoIngestMissingDrug(
   }
 
   // Prefer the canonical (normalized) term if present; otherwise the first term.
-  const resolved = drugTerms.find((t) => !question.toLowerCase().includes(t.toLowerCase())) ?? drugTerms[0];
+  const resolved =
+    drugTerms.find((t) => !question.toLowerCase().includes(t.toLowerCase())) ?? drugTerms[0];
 
   try {
     const { labels } = await searchLabelsWithNormalization(resolved);
@@ -234,7 +233,13 @@ export async function autoIngestMissingDrug(
     };
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : String(cause);
-    return { attempted: true, term: resolved, ingestedLabelId: null, chunksCount: 0, error: message };
+    return {
+      attempted: true,
+      term: resolved,
+      ingestedLabelId: null,
+      chunksCount: 0,
+      error: message,
+    };
   }
 }
 

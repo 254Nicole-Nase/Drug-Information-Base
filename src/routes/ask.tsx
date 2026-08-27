@@ -217,8 +217,8 @@ function Ask() {
               {answerMutation.data.autoIngest.ingestedLabelId ? (
                 <p>
                   <span className="font-medium">Auto-added to corpus:</span> found an FDA label for{" "}
-                  "{answerMutation.data.autoIngest.term}" ({answerMutation.data.autoIngest.chunksCount}{" "}
-                  chunks) and answered from it.
+                  "{answerMutation.data.autoIngest.term}" (
+                  {answerMutation.data.autoIngest.chunksCount} chunks) and answered from it.
                 </p>
               ) : (
                 <p>
