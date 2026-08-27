@@ -62,7 +62,9 @@ plain `bun run build` produces the right output.
 bun run build
 bunx wrangler secret put SUPABASE_PUBLISHABLE_KEY
 bunx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
-bunx wrangler secret put LOVABLE_API_KEY
+# Pick one AI provider secret:
+bunx wrangler secret put GOOGLE_API_KEY
+# OR: bunx wrangler secret put LOVABLE_API_KEY
 bunx wrangler deploy
 ```
 
