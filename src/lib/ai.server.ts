@@ -1,23 +1,55 @@
 const AIG_BASE = "https://ai.gateway.lovable.dev/v1";
+const GOOGLE_OPENAI_BASE = "https://generativelanguage.googleapis.com/v1beta/openai";
 
-function getApiKey(): string {
-  const key = process.env["LOVABLE_API_KEY"];
-  if (!key) throw new Error("LOVABLE_API_KEY is not configured");
-  return key;
+type Provider = "lovable" | "google";
+
+function pickProvider(): { provider: Provider; apiKey: string; baseUrl: string } {
+  const googleKey = process.env["GOOGLE_API_KEY"];
+  if (googleKey) {
+    return { provider: "google", apiKey: googleKey, baseUrl: GOOGLE_OPENAI_BASE };
+  }
+
+  const lovableKey = process.env["LOVABLE_API_KEY"];
+  if (lovableKey) {
+    return { provider: "lovable", apiKey: lovableKey, baseUrl: AIG_BASE };
+  }
+
+  throw new Error(
+    "No AI provider configured. Set GOOGLE_API_KEY or LOVABLE_API_KEY in your environment.",
+  );
+}
+
+function mapModel(provider: Provider, model: string): string {
+  if (provider === "google") {
+    // Lovable gateway uses vendor-prefixed ids; Google's OpenAI endpoint uses bare ids.
+    if (model.startsWith("google/")) return model.slice("google/".length);
+    if (model.startsWith("openai/")) {
+      throw new Error(`OpenAI model "${model}" is not available on the Google provider.`);
+    }
+    return model;
+  }
+  return model;
 }
 
 export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
-  const response = await fetch(`${AIG_BASE}/embeddings`, {
+
+  const { provider, apiKey, baseUrl } = pickProvider();
+  const model = provider === "google" ? "text-embedding-004" : "openai/text-embedding-3-small";
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (provider === "lovable") {
+    headers["Lovable-API-Key"] = apiKey;
+  } else {
+    headers["Authorization"] = `Bearer ${apiKey}`;
+  }
+
+  const response = await fetch(`${baseUrl}/embeddings`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Lovable-API-Key": getApiKey(),
-    },
-    body: JSON.stringify({
-      model: "openai/text-embedding-3-small",
-      input: texts,
-    }),
+    headers,
+    body: JSON.stringify({ model, input: texts }),
   });
 
   if (!response.ok) {
@@ -37,14 +69,23 @@ export async function generateAnswer(
   messages: Array<{ role: "user"; content: string }>,
   model = "google/gemini-2.5-flash",
 ): Promise<string> {
-  const response = await fetch(`${AIG_BASE}/chat/completions`, {
+  const { provider, apiKey, baseUrl } = pickProvider();
+  const mappedModel = mapModel(provider, model);
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (provider === "lovable") {
+    headers["Lovable-API-Key"] = apiKey;
+  } else {
+    headers["Authorization"] = `Bearer ${apiKey}`;
+  }
+
+  const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Lovable-API-Key": getApiKey(),
-    },
+    headers,
     body: JSON.stringify({
-      model,
+      model: mappedModel,
       temperature: 0.2,
       max_tokens: 900,
       messages: [{ role: "system", content: system }, ...messages],
