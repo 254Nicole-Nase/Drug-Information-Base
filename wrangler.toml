@@ -1,0 +1,17 @@
+name = "drug-info-center"
+main = ".output/server/index.mjs"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".output/public"
+binding = "ASSETS"
+
+# Build first: bun run build (cloudflare is the default nitro preset)
+# Secrets (never put these here):
+#   wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+#   wrangler secret put SUPABASE_PUBLISHABLE_KEY
+#   wrangler secret put LOVABLE_API_KEY
+
+[vars]
+SUPABASE_URL = "https://ypkeqesrvsnxkmvcyzcm.supabase.co"
