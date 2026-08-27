@@ -35,7 +35,7 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
 
   const { provider, apiKey, baseUrl } = pickProvider();
-  const model = provider === "google" ? "text-embedding-004" : "openai/text-embedding-3-small";
+  const model = provider === "google" ? "gemini-embedding-001" : "openai/text-embedding-3-small";
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
