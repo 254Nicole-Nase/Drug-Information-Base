@@ -113,33 +113,43 @@ AS $$
 WITH vector_matches AS (
   SELECT
     id,
-    label_id,
-    section_key,
-    section_title,
-    content,
     1 - (embedding <=> query_embedding) AS similarity,
     row_number() OVER (ORDER BY embedding <=> query_embedding) AS v_rank
   FROM public.label_chunks
-  WHERE 1 - (embedding <=> query_embedding) > 0.5
+  ORDER BY embedding <=> query_embedding
+  LIMIT GREATEST(match_count * 4, 20)
 ),
 keyword_matches AS (
   SELECT
     id,
-    ts_rank_cd(search_tsv, plainto_tsquery('english', query_text)) AS k_rank
+    ts_rank_cd(search_tsv, plainto_tsquery('english', query_text)) AS k_rank,
+    row_number() OVER (
+      ORDER BY ts_rank_cd(search_tsv, plainto_tsquery('english', query_text)) DESC
+    ) AS k_rank_pos
   FROM public.label_chunks
   WHERE search_tsv @@ plainto_tsquery('english', query_text)
+  LIMIT GREATEST(match_count * 4, 20)
+),
+fused AS (
+  SELECT
+    COALESCE(vm.id, km.id) AS id,
+    COALESCE(vm.similarity, 0) AS similarity,
+    COALESCE(km.k_rank, 0) AS keyword_rank,
+    COALESCE(1.0 / (60 + vm.v_rank), 0) + COALESCE(1.0 / (60 + km.k_rank_pos), 0) AS score
+  FROM vector_matches vm
+  FULL OUTER JOIN keyword_matches km ON vm.id = km.id
 )
 SELECT
-  vm.id AS chunk_id,
-  vm.label_id,
-  vm.section_key,
-  vm.section_title,
-  vm.content,
-  vm.similarity,
-  COALESCE(km.k_rank, 0) AS keyword_rank
-FROM vector_matches vm
-LEFT JOIN keyword_matches km ON vm.id = km.id
-ORDER BY (COALESCE(1.0 / (60 + vm.v_rank), 0) + COALESCE(km.k_rank * 0.5, 0)) DESC
+  c.id AS chunk_id,
+  c.label_id,
+  c.section_key,
+  c.section_title,
+  c.content,
+  f.similarity,
+  f.keyword_rank
+FROM fused f
+JOIN public.label_chunks c ON c.id = f.id
+ORDER BY f.score DESC
 LIMIT match_count;
 $$;
 
